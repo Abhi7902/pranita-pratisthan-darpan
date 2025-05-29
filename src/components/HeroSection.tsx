@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAppContext } from '@/contexts/AppContext';
 
 const HeroSection = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const { popupData } = useAppContext();
 
   useEffect(() => {
     // Show popup after 2 seconds
@@ -66,13 +68,13 @@ const HeroSection = () => {
                 <span className="text-2xl">🎉</span>
               </div>
               <h3 className="text-2xl font-bold text-marathi-orange mb-4">
-                आगामी कार्यक्रम
+                {popupData.title}
               </h3>
               <p className="text-gray-700 mb-4">
-                "वार्षिक समाजसेवा दिन" - 15 जानेवारी 2024
+                {popupData.description}
               </p>
               <p className="text-sm text-gray-600 mb-6">
-                सकाळी 10 वाजता, कॉम्युनिटी हॉल येथे
+                {popupData.date}, {popupData.location}
               </p>
               <Button 
                 onClick={() => setShowPopup(false)}

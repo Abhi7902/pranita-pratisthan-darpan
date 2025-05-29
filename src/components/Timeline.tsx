@@ -1,44 +1,18 @@
 
 import { Calendar, Users, Award, Heart } from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
 
 const Timeline = () => {
-  const events = [
-    {
-      year: '2020',
-      title: 'संस्था स्थापना',
-      description: 'प्रणिता प्रतिष्ठानची स्थापना समाजसेवेच्या उद्देशाने',
-      icon: Users,
-      color: 'bg-marathi-orange'
-    },
-    {
-      year: '2021', 
-      title: 'शिक्षण सेवा सुरुवात',
-      description: 'गरीब मुलांसाठी मोफत शिक्षण कार्यक्रम सुरू केला',
-      icon: Award,
-      color: 'bg-marathi-gold'
-    },
-    {
-      year: '2022',
-      title: 'आरोग्य शिबिर',
-      description: 'गावोगावी मोफत आरोग्य तपासणी शिबिरे आयोजित केली',
-      icon: Heart,
-      color: 'bg-marathi-green'
-    },
-    {
-      year: '2023',
-      title: 'राष्ट्रीय पुरस्कार',
-      description: 'समाजसेवेसाठी राष्ट्रीय स्तरावर सन्मान प्राप्त',
-      icon: Award,
-      color: 'bg-marathi-orange'
-    },
-    {
-      year: '2024',
-      title: 'नवीन प्रकल्प',
-      description: 'महिला सक्षमीकरण आणि कृषी विकास प्रकल्प सुरुवात',
-      icon: Users,
-      color: 'bg-marathi-gold'
+  const { timelineEvents } = useAppContext();
+
+  const getIconComponent = (iconName: string) => {
+    switch(iconName) {
+      case 'Users': return Users;
+      case 'Heart': return Heart;
+      case 'Calendar': return Calendar;
+      default: return Award;
     }
-  ];
+  };
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-orange-50">
@@ -57,29 +31,32 @@ const Timeline = () => {
           {/* Vertical timeline line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full saffron-gradient"></div>
           
-          {events.map((event, index) => (
-            <div key={index} className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
-              <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
-                <div className="bg-white rounded-lg p-6 cultural-shadow animate-fade-in">
-                  <div className="flex items-center mb-4">
-                    <div className={`w-12 h-12 ${event.color} rounded-full flex items-center justify-center text-white mr-4`}>
-                      <event.icon className="h-6 w-6" />
+          {timelineEvents.map((event, index) => {
+            const IconComponent = getIconComponent(event.icon);
+            return (
+              <div key={index} className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
+                  <div className="bg-white rounded-lg p-6 cultural-shadow animate-fade-in">
+                    <div className="flex items-center mb-4">
+                      <div className={`w-12 h-12 ${event.color} rounded-full flex items-center justify-center text-white mr-4`}>
+                        <IconComponent className="h-6 w-6" />
+                      </div>
+                      <span className="text-2xl font-bold text-marathi-orange">{event.year}</span>
                     </div>
-                    <span className="text-2xl font-bold text-marathi-orange">{event.year}</span>
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">{event.title}</h3>
+                    <p className="text-gray-600">{event.description}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">{event.title}</h3>
-                  <p className="text-gray-600">{event.description}</p>
                 </div>
+                
+                {/* Center circle */}
+                <div className="w-2/12 flex justify-center">
+                  <div className="w-4 h-4 bg-marathi-orange rounded-full border-4 border-white shadow-lg z-10"></div>
+                </div>
+                
+                <div className="w-5/12"></div>
               </div>
-              
-              {/* Center circle */}
-              <div className="w-2/12 flex justify-center">
-                <div className="w-4 h-4 bg-marathi-orange rounded-full border-4 border-white shadow-lg z-10"></div>
-              </div>
-              
-              <div className="w-5/12"></div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

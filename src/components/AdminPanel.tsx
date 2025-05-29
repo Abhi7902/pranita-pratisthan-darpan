@@ -7,21 +7,101 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useAppContext } from '@/contexts/AppContext';
 
 const AdminPanel = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
+  
+  const {
+    timelineEvents,
+    addTimelineEvent,
+    newsItems,
+    addNewsItem,
+    youtubeVideos,
+    addYouTubeVideo,
+    programs,
+    addProgram,
+    popupData,
+    setPopupData
+  } = useAppContext();
+
+  // Form states
+  const [newVideo, setNewVideo] = useState({ title: '', videoId: '', description: '' });
+  const [newNews, setNewNews] = useState({ title: '', summary: '', content: '', author: '', date: '' });
+  const [newTimeline, setNewTimeline] = useState({ year: '', title: '', description: '' });
+  const [newProgram, setNewProgram] = useState({ name: '', description: '', details: '' });
+  const [newPopup, setNewPopup] = useState(popupData);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple demo login (in real app, this would be secure authentication)
     if (loginData.username === 'admin' && loginData.password === 'admin123') {
       setIsLoggedIn(true);
       toast.success('यशस्वीरीत्या लॉगिन झाले!');
     } else {
       toast.error('चुकीचे वापरकर्ता नाव किंवा पासवर्ड');
     }
+  };
+
+  const handleAddVideo = () => {
+    if (newVideo.title && newVideo.videoId) {
+      addYouTubeVideo({
+        id: Date.now().toString(),
+        title: newVideo.title,
+        videoId: newVideo.videoId,
+        description: newVideo.description
+      });
+      setNewVideo({ title: '', videoId: '', description: '' });
+      toast.success('व्हिडिओ यशस्वीरीत्या जोडला!');
+    }
+  };
+
+  const handleAddNews = () => {
+    if (newNews.title && newNews.content) {
+      addNewsItem({
+        id: Date.now().toString(),
+        title: newNews.title,
+        summary: newNews.summary,
+        content: newNews.content,
+        author: newNews.author,
+        date: newNews.date
+      });
+      setNewNews({ title: '', summary: '', content: '', author: '', date: '' });
+      toast.success('बातमी यशस्वीरीत्या जोडली!');
+    }
+  };
+
+  const handleAddTimeline = () => {
+    if (newTimeline.year && newTimeline.title) {
+      addTimelineEvent({
+        year: newTimeline.year,
+        title: newTimeline.title,
+        description: newTimeline.description,
+        icon: 'Award',
+        color: 'bg-marathi-orange'
+      });
+      setNewTimeline({ year: '', title: '', description: '' });
+      toast.success('घटना यशस्वीरीत्या जोडली!');
+    }
+  };
+
+  const handleAddProgram = () => {
+    if (newProgram.name && newProgram.description) {
+      addProgram({
+        id: Date.now().toString(),
+        name: newProgram.name,
+        description: newProgram.description,
+        details: newProgram.details
+      });
+      setNewProgram({ name: '', description: '', details: '' });
+      toast.success('प्रकल्प यशस्वीरीत्या जोडला!');
+    }
+  };
+
+  const handleUpdatePopup = () => {
+    setPopupData(newPopup);
+    toast.success('पॉपअप यशस्वीरीत्या अपडेट केला!');
   };
 
   if (!isLoggedIn) {
@@ -103,12 +183,13 @@ const AdminPanel = () => {
         </div>
 
         <Tabs defaultValue="youtube" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="youtube">YouTube</TabsTrigger>
             <TabsTrigger value="gallery">फोटो गॅलरी</TabsTrigger>
             <TabsTrigger value="popup">पॉपअप</TabsTrigger>
             <TabsTrigger value="news">बातम्या</TabsTrigger>
             <TabsTrigger value="timeline">टाइमलाइन</TabsTrigger>
+            <TabsTrigger value="programs">प्रकल्प</TabsTrigger>
           </TabsList>
 
           {/* YouTube Management */}
@@ -120,24 +201,40 @@ const AdminPanel = () => {
               <CardContent>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="व्हिडिओ शीर्षक" />
-                    <Input placeholder="YouTube व्हिडिओ ID" />
+                    <Input 
+                      placeholder="व्हिडिओ शीर्षक" 
+                      value={newVideo.title}
+                      onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
+                    />
+                    <Input 
+                      placeholder="YouTube व्हिडिओ ID" 
+                      value={newVideo.videoId}
+                      onChange={(e) => setNewVideo({...newVideo, videoId: e.target.value})}
+                    />
                   </div>
-                  <Textarea placeholder="व्हिडिओ वर्णन" rows={3} />
-                  <Button className="bg-marathi-orange hover:bg-marathi-deepOrange text-white">
+                  <Textarea 
+                    placeholder="व्हिडिओ वर्णन" 
+                    rows={3} 
+                    value={newVideo.description}
+                    onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
+                  />
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    onClick={handleAddVideo}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     व्हिडिओ जोडा
                   </Button>
                 </div>
 
                 <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याचे व्हिडिओ</h3>
+                  <h3 className="text-lg font-bold mb-4">सध्याचे व्हिडिओ ({youtubeVideos.length})</h3>
                   <div className="space-y-4">
-                    {[1, 2, 3].map((video) => (
-                      <div key={video} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                    {youtubeVideos.map((video) => (
+                      <div key={video.id} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium">व्हिडिओ शीर्षक {video}</h4>
-                          <p className="text-sm text-gray-600">ID: dQw4w9WgXcQ</p>
+                          <h4 className="font-medium">{video.title}</h4>
+                          <p className="text-sm text-gray-600">ID: {video.videoId}</p>
                         </div>
                         <div className="flex space-x-2">
                           <Button size="sm" variant="outline">
@@ -153,6 +250,231 @@ const AdminPanel = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* News Management */}
+          <TabsContent value="news">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">बातम्या व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <Input 
+                    placeholder="बातमी शीर्षक" 
+                    value={newNews.title}
+                    onChange={(e) => setNewNews({...newNews, title: e.target.value})}
+                  />
+                  <Textarea 
+                    placeholder="बातमी सार" 
+                    rows={2} 
+                    value={newNews.summary}
+                    onChange={(e) => setNewNews({...newNews, summary: e.target.value})}
+                  />
+                  <Textarea 
+                    placeholder="संपूर्ण बातमी" 
+                    rows={5} 
+                    value={newNews.content}
+                    onChange={(e) => setNewNews({...newNews, content: e.target.value})}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input 
+                      placeholder="लेखक" 
+                      value={newNews.author}
+                      onChange={(e) => setNewNews({...newNews, author: e.target.value})}
+                    />
+                    <Input 
+                      type="date" 
+                      value={newNews.date}
+                      onChange={(e) => setNewNews({...newNews, date: e.target.value})}
+                    />
+                  </div>
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    onClick={handleAddNews}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    बातमी जोडा
+                  </Button>
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-lg font-bold mb-4">सध्याच्या बातम्या ({newsItems.length})</h3>
+                  <div className="space-y-4">
+                    {newsItems.map((news) => (
+                      <div key={news.id} className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium">{news.title}</h4>
+                        <p className="text-sm text-gray-600">{news.author} - {news.date}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Timeline Management */}
+          <TabsContent value="timeline">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">टाइमलाइन व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input 
+                      placeholder="वर्ष" 
+                      value={newTimeline.year}
+                      onChange={(e) => setNewTimeline({...newTimeline, year: e.target.value})}
+                    />
+                    <Input 
+                      placeholder="घटना शीर्षक" 
+                      value={newTimeline.title}
+                      onChange={(e) => setNewTimeline({...newTimeline, title: e.target.value})}
+                    />
+                  </div>
+                  <Textarea 
+                    placeholder="घटनेचे वर्णन" 
+                    rows={3} 
+                    value={newTimeline.description}
+                    onChange={(e) => setNewTimeline({...newTimeline, description: e.target.value})}
+                  />
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    onClick={handleAddTimeline}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    घटना जोडा
+                  </Button>
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-lg font-bold mb-4">सध्याच्या घटना ({timelineEvents.length})</h3>
+                  <div className="space-y-4">
+                    {timelineEvents.map((event, index) => (
+                      <div key={index} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                        <span>{event.year} - {event.title}</span>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Programs Management */}
+          <TabsContent value="programs">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">प्रकल्प व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <Input 
+                    placeholder="प्रकल्पाचे नाव" 
+                    value={newProgram.name}
+                    onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
+                  />
+                  <Textarea 
+                    placeholder="प्रकल्पाचे वर्णन" 
+                    rows={2} 
+                    value={newProgram.description}
+                    onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
+                  />
+                  <Textarea 
+                    placeholder="संपूर्ण तपशील" 
+                    rows={4} 
+                    value={newProgram.details}
+                    onChange={(e) => setNewProgram({...newProgram, details: e.target.value})}
+                  />
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    onClick={handleAddProgram}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    प्रकल्प जोडा
+                  </Button>
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-lg font-bold mb-4">सध्याचे प्रकल्प ({programs.length})</h3>
+                  <div className="space-y-4">
+                    {programs.map((program) => (
+                      <div key={program.id} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{program.name}</h4>
+                          <p className="text-sm text-gray-600">{program.description}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Popup Management */}
+          <TabsContent value="popup">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">पॉपअप व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <Input 
+                    placeholder="कार्यक्रमाचे नाव" 
+                    value={newPopup.title}
+                    onChange={(e) => setNewPopup({...newPopup, title: e.target.value})}
+                  />
+                  <Input 
+                    placeholder="दिनांक आणि वेळ" 
+                    value={newPopup.date}
+                    onChange={(e) => setNewPopup({...newPopup, date: e.target.value})}
+                  />
+                  <Input 
+                    placeholder="ठिकाण" 
+                    value={newPopup.location}
+                    onChange={(e) => setNewPopup({...newPopup, location: e.target.value})}
+                  />
+                  <Textarea 
+                    placeholder="तपशील" 
+                    rows={3} 
+                    value={newPopup.description}
+                    onChange={(e) => setNewPopup({...newPopup, description: e.target.value})}
+                  />
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    onClick={handleUpdatePopup}
+                  >
+                    पॉपअप अपडेट करा
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -195,100 +517,6 @@ const AdminPanel = () => {
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Popup Management */}
-          <TabsContent value="popup">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">पॉपअप व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <Input placeholder="कार्यक्रमाचे नाव" />
-                  <Input placeholder="दिनांक आणि वेळ" />
-                  <Input placeholder="ठिकाण" />
-                  <Textarea placeholder="तपशील" rows={3} />
-                  
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <p className="text-gray-600 mb-2">पॉपअप इमेज अपलोड करा</p>
-                    <Button variant="outline">इमेज निवडा</Button>
-                  </div>
-                  
-                  <Button className="bg-marathi-orange hover:bg-marathi-deepOrange text-white">
-                    पॉपअप अपडेट करा
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* News Management */}
-          <TabsContent value="news">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">बातम्या व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <Input placeholder="बातमी शीर्षक" />
-                  <Textarea placeholder="बातमी सार" rows={2} />
-                  <Textarea placeholder="संपूर्ण बातमी" rows={5} />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="लेखक" />
-                    <Input type="date" />
-                  </div>
-                  
-                  <Button className="bg-marathi-orange hover:bg-marathi-deepOrange text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    बातमी जोडा
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Timeline Management */}
-          <TabsContent value="timeline">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">टाइमलाइन व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="वर्ष" />
-                    <Input placeholder="घटना शीर्षक" />
-                  </div>
-                  <Textarea placeholder="घटनेचे वर्णन" rows={3} />
-                  
-                  <Button className="bg-marathi-orange hover:bg-marathi-deepOrange text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    घटना जोडा
-                  </Button>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याच्या घटना</h3>
-                  <div className="space-y-4">
-                    {['2020 - संस्था स्थापना', '2021 - शिक्षण सेवा', '2022 - आरोग्य शिबिर'].map((event, index) => (
-                      <div key={index} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-                        <span>{event}</span>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

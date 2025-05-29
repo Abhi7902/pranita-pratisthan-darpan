@@ -1,7 +1,9 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAppContext } from '@/contexts/AppContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +18,8 @@ interface NavbarProps {
 
 const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const projects = [
-    'शिक्षण सेवा',
-    'आरोग्य सेवा', 
-    'महिला सक्षमीकरण',
-    'कृषी विकास',
-    'पर्यावरण संरक्षण',
-    'युवा विकास'
-  ];
+  const navigate = useNavigate();
+  const { programs } = useAppContext();
 
   const navItems = [
     { id: 'home', label: 'मुख्यपृष्ठ' },
@@ -33,6 +28,10 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
     { id: 'news', label: 'बातम्या व प्रसारमाध्यम' },
     { id: 'youtube', label: 'YouTube विंडो' }
   ];
+
+  const handleProgramClick = (programId: string) => {
+    navigate(`/program/${programId}`);
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-lg border-b-4 border-marathi-orange">
@@ -72,12 +71,13 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white border-2 border-marathi-orange/20">
-                {projects.map((project) => (
+                {programs.map((program) => (
                   <DropdownMenuItem 
-                    key={project}
+                    key={program.id}
                     className="hover:bg-marathi-orange/10 cursor-pointer"
+                    onClick={() => handleProgramClick(program.id)}
                   >
-                    {project}
+                    {program.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -125,12 +125,16 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
               
               <div className="px-3 py-2">
                 <p className="text-sm font-medium text-gray-700 mb-2">प्रकल्प</p>
-                {projects.map((project) => (
+                {programs.map((program) => (
                   <button 
-                    key={project}
+                    key={program.id}
                     className="block px-3 py-1 text-sm text-gray-600 hover:text-marathi-orange w-full text-left"
+                    onClick={() => {
+                      handleProgramClick(program.id);
+                      setIsOpen(false);
+                    }}
                   >
-                    {project}
+                    {program.name}
                   </button>
                 ))}
               </div>
