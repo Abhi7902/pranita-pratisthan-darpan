@@ -28,6 +28,7 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
 
   const navItems = [
     { id: 'home', label: 'मुख्यपृष्ठ' },
+    { id: 'about', label: 'संस्था माहिती' },
     { id: 'gallery', label: 'छायाचित्र दालन' },
     { id: 'news', label: 'बातम्या व प्रसारमाध्यम' },
     { id: 'youtube', label: 'YouTube विंडो' }

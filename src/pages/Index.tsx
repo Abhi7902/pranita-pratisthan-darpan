@@ -9,6 +9,7 @@ import YouTubeSection from '@/components/YouTubeSection';
 import FeedbackForm from '@/components/FeedbackForm';
 import AdminPanel from '@/components/AdminPanel';
 import Footer from '@/components/Footer';
+import AboutSection from '@/components/AboutSection';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -22,6 +23,8 @@ const Index = () => {
             <Timeline />
           </>
         );
+      case 'about':
+        return <AboutSection />;
       case 'gallery':
         return <PhotoGallery />;
       case 'news':
