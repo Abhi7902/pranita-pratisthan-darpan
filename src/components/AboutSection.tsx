@@ -52,9 +52,9 @@ const AboutSection = () => {
                 <Users className="h-16 w-16 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-marathi-orange mb-2">अध्यक्ष</h3>
-              <p className="text-xl font-semibold text-gray-800 mb-4">श्री. राजेश पाटील</p>
+              <p className="text-xl font-semibold text-gray-800 mb-4">श्री. मिलिंद धर्माधिकारी</p>
               <p className="text-gray-600 leading-relaxed">
-                समाजसेवेत 25 वर्षांचा अनुभव असलेले श्री. राजेश पाटील यांनी अनेक सामाजिक प्रकल्पांचे यशस्वी नेतृत्व केले आहे.
+                समाजसेवेत 25 वर्षांचा अनुभव असलेले श्री. मिलिंद धर्माधिकारी यांनी अनेक सामाजिक प्रकल्पांचे यशस्वी नेतृत्व केले आहे.
               </p>
             </div>
             
@@ -63,9 +63,9 @@ const AboutSection = () => {
                 <Award className="h-16 w-16 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-marathi-orange mb-2">सचिव</h3>
-              <p className="text-xl font-semibold text-gray-800 mb-4">सौ. सुनिता शर्मा</p>
+              <p className="text-xl font-semibold text-gray-800 mb-4">श्री. भानुदास पाटील</p>
               <p className="text-gray-600 leading-relaxed">
-                शिक्षण क्षेत्रातील तज्ञ असलेल्या सौ. सुनिता शर्मा यांनी संस्थेच्या सर्व कार्यक्रमांचे व्यवस्थापन उत्कृष्टपणे केले आहे.
+                शिक्षण क्षेत्रातील तज्ञ असलेले श्री. भानुदास पाटील यांनी संस्थेच्या सर्व कार्यक्रमांचे व्यवस्थापन उत्कृष्टपणे केले आहे.
               </p>
             </div>
           </div>

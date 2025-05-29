@@ -17,14 +17,21 @@ const HeroSection = () => {
 
   return (
     <div className="relative">
+      {/* Organization name banner - top */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="bg-marathi-orange text-white py-2 px-4">
+          <h2 className="text-lg font-bold text-center">प्रणिता प्रतिष्ठान</h2>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div 
         className="h-screen bg-cover bg-center bg-no-repeat relative"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1492321936769-b49830bc1d1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1566552881560-0be862a7c445?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
         }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pt-16">
           <div className="text-center text-white animate-fade-in">
             <h1 className="text-6xl md:text-8xl font-bold mb-6 text-shadow">
               प्रणिता प्रतिष्ठान
@@ -38,6 +45,13 @@ const HeroSection = () => {
         
         {/* Decorative elements */}
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent"></div>
+      </div>
+
+      {/* Organization name banner - bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="bg-marathi-orange text-white py-2 px-4">
+          <h2 className="text-lg font-bold text-center">प्रणिता प्रतिष्ठान - समाजसेवेसाठी समर्पित</h2>
+        </div>
       </div>
 
       {/* Event Popup */}
