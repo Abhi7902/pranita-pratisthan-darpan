@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,27 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Marathi cultural colors
+				saffron: {
+					50: '#fff8ed',
+					100: '#ffefd4',
+					200: '#ffdca8',
+					300: '#ffc371',
+					400: '#ff9f38',
+					500: '#ff8200',
+					600: '#e65c00',
+					700: '#cc4500',
+					800: '#a03600',
+					900: '#7d2900'
+				},
+				marathi: {
+					orange: '#ff6600',
+					deepOrange: '#cc4500',
+					gold: '#ffd700',
+					saffron: '#ff8200',
+					green: '#138808',
+					deepGreen: '#0f5f08'
 				}
 			},
 			borderRadius: {
@@ -84,11 +106,31 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'slide-in': {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.6s ease-out',
+				'slide-in': 'slide-in 0.8s ease-out'
 			}
 		}
 	},

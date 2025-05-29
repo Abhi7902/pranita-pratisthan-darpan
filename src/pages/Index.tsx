@@ -1,12 +1,58 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import Navbar from '@/components/Navbar';
+import HeroSection from '@/components/HeroSection';
+import Timeline from '@/components/Timeline';
+import PhotoGallery from '@/components/PhotoGallery';
+import NewsSection from '@/components/NewsSection';
+import YouTubeSection from '@/components/YouTubeSection';
+import FeedbackForm from '@/components/FeedbackForm';
+import AdminPanel from '@/components/AdminPanel';
+import Footer from '@/components/Footer';
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState('home');
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'home':
+        return (
+          <>
+            <HeroSection />
+            <Timeline />
+          </>
+        );
+      case 'gallery':
+        return <PhotoGallery />;
+      case 'news':
+        return <NewsSection />;
+      case 'youtube':
+        return <YouTubeSection />;
+      case 'admin':
+        return <AdminPanel />;
+      default:
+        return (
+          <>
+            <HeroSection />
+            <Timeline />
+          </>
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Navbar activeSection={activeSection} onNavigate={setActiveSection} />
+      
+      <main className="pt-16">
+        {renderSection()}
+        
+        {/* Always show feedback form except on admin page */}
+        {activeSection !== 'admin' && <FeedbackForm />}
+      </main>
+
+      {/* Always show footer except on admin page */}
+      {activeSection !== 'admin' && <Footer />}
     </div>
   );
 };
