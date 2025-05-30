@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -30,6 +31,10 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
 
   const handleProgramClick = (programId: string) => {
     navigate(`/program/${programId}`);
+  };
+
+  const handleMELClick = () => {
+    navigate('/mel');
   };
 
   return (
@@ -97,6 +102,13 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
             </DropdownMenu>
 
             <Button 
+              onClick={handleMELClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              MEL
+            </Button>
+
+            <Button 
               onClick={() => onNavigate('admin')}
               className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
             >
@@ -151,6 +163,16 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                   </button>
                 ))}
               </div>
+
+              <Button 
+                onClick={() => {
+                  handleMELClick();
+                  setIsOpen(false);
+                }}
+                className="mx-3 my-2 bg-blue-600 hover:bg-blue-700 text-white w-auto"
+              >
+                MEL
+              </Button>
               
               <Button 
                 onClick={() => {
