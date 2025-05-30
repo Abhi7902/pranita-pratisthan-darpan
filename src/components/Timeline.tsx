@@ -17,7 +17,7 @@ const Timeline = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-white to-orange-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold text-marathi-orange mb-6">
             आमचा प्रवास
           </h2>
@@ -34,11 +34,15 @@ const Timeline = () => {
           {timelineEvents.map((event, index) => {
             const IconComponent = getIconComponent(event.icon);
             return (
-              <div key={index} className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
+              <div 
+                key={index} 
+                className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'} animate-fade-in`}
+                style={{ animationDelay: `${index * 0.2}s` }}
+              >
                 <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
-                  <div className="bg-white rounded-lg p-6 cultural-shadow animate-fade-in">
+                  <div className="bg-white rounded-lg p-6 cultural-shadow hover:shadow-xl transition-all duration-500 transform hover:scale-105">
                     <div className="flex items-center mb-4">
-                      <div className={`w-12 h-12 ${event.color} rounded-full flex items-center justify-center text-white mr-4`}>
+                      <div className={`w-12 h-12 ${event.color} rounded-full flex items-center justify-center text-white mr-4 transition-transform duration-300 hover:rotate-12`}>
                         <IconComponent className="h-6 w-6" />
                       </div>
                       <span className="text-2xl font-bold text-marathi-orange">{event.year}</span>
@@ -50,7 +54,7 @@ const Timeline = () => {
                 
                 {/* Center circle */}
                 <div className="w-2/12 flex justify-center">
-                  <div className="w-4 h-4 bg-marathi-orange rounded-full border-4 border-white shadow-lg z-10"></div>
+                  <div className="w-4 h-4 bg-marathi-orange rounded-full border-4 border-white shadow-lg z-10 transform transition-all duration-300 hover:scale-150"></div>
                 </div>
                 
                 <div className="w-5/12"></div>

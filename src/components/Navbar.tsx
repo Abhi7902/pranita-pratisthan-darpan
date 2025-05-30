@@ -39,18 +39,18 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
 
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-lg border-b-4 border-marathi-orange">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex justify-between h-12">
           <div className="flex items-center">
             <div className="flex-shrink-0 cursor-pointer flex items-center gap-2" onClick={() => onNavigate('home')}>
               <img
                 src="/logo.png"
                 alt="Pranita Pratisthan Logo"
-                className="h-10 w-auto"
+                className="h-8 w-auto"
                 style={{ filter: "drop-shadow(0 2px 6px #E6510055)" }}
               />
               <h1
-                className="text-2xl font-bold text-black text-shadow"
+                className="text-lg font-bold text-black text-shadow"
                 style={{
                   fontFamily: "'Tiro Devanagari Marathi', 'Mukta', sans-serif",
                   letterSpacing: "0.04em",
@@ -64,12 +64,12 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                   activeSection === item.id
                     ? 'text-marathi-orange border-b-2 border-marathi-orange'
                     : 'text-gray-700 hover:text-marathi-orange'
@@ -83,12 +83,13 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="text-gray-700 hover:text-marathi-orange"
+                  size="sm"
+                  className="text-gray-700 hover:text-marathi-orange text-xs px-2"
                 >
-                  प्रकल्प <ChevronDown className="ml-1 h-4 w-4" />
+                  प्रकल्प <ChevronDown className="ml-1 h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border-2 border-marathi-orange/20">
+              <DropdownMenuContent className="bg-white border-2 border-marathi-orange/20 z-50">
                 {programs.map((program) => (
                   <DropdownMenuItem 
                     key={program.id}
@@ -103,16 +104,18 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
 
             <Button 
               onClick={handleMELClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3"
             >
               MEL
             </Button>
 
             <Button 
               onClick={() => onNavigate('admin')}
-              className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+              size="sm"
+              className="bg-marathi-orange hover:bg-marathi-deepOrange text-white text-xs px-3"
             >
-              Admin Login
+              Admin
             </Button>
           </div>
 
@@ -122,7 +125,7 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-700 hover:text-marathi-orange"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -138,7 +141,7 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                     onNavigate(item.id);
                     setIsOpen(false);
                   }}
-                  className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${
+                  className={`block px-3 py-2 rounded-md text-sm font-medium w-full text-left ${
                     activeSection === item.id
                       ? 'text-marathi-orange bg-marathi-orange/10'
                       : 'text-gray-700 hover:text-marathi-orange hover:bg-gray-50'
@@ -149,11 +152,11 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
               ))}
               
               <div className="px-3 py-2">
-                <p className="text-sm font-medium text-gray-700 mb-2">प्रकल्प</p>
+                <p className="text-xs font-medium text-gray-700 mb-2">प्रकल्प</p>
                 {programs.map((program) => (
                   <button 
                     key={program.id}
-                    className="block px-3 py-1 text-sm text-gray-600 hover:text-marathi-orange w-full text-left"
+                    className="block px-3 py-1 text-xs text-gray-600 hover:text-marathi-orange w-full text-left"
                     onClick={() => {
                       handleProgramClick(program.id);
                       setIsOpen(false);
@@ -169,7 +172,8 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                   handleMELClick();
                   setIsOpen(false);
                 }}
-                className="mx-3 my-2 bg-blue-600 hover:bg-blue-700 text-white w-auto"
+                className="mx-3 my-2 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                size="sm"
               >
                 MEL
               </Button>
@@ -179,9 +183,10 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                   onNavigate('admin');
                   setIsOpen(false);
                 }}
-                className="mx-3 my-2 bg-marathi-orange hover:bg-marathi-deepOrange text-white w-auto"
+                className="mx-3 my-2 bg-marathi-orange hover:bg-marathi-deepOrange text-white text-xs"
+                size="sm"
               >
-                Admin Login
+                Admin
               </Button>
             </div>
           </div>

@@ -14,11 +14,13 @@ interface MELDashboardProps {
 }
 
 const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
-  const { currentMELUser, setCurrentMELUser } = useMELContext();
+  const { currentMELUser, setCurrentMELUser, getOverdueRentals } = useMELContext();
 
   const handleLogout = () => {
     setCurrentMELUser(null);
   };
+
+  const overdueRentals = getOverdueRentals();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,10 +61,11 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="equipment" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="equipment">Equipment</TabsTrigger>
             <TabsTrigger value="rental">New Rental</TabsTrigger>
             <TabsTrigger value="history">Rental History</TabsTrigger>
+            <TabsTrigger value="overdue">Overdue ({overdueRentals.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="equipment">
@@ -75,6 +78,36 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
 
           <TabsContent value="history">
             <RentalHistory />
+          </TabsContent>
+
+          <TabsContent value="overdue">
+            <Card>
+              <CardHeader>
+                <CardTitle>Overdue Equipment ({overdueRentals.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {overdueRentals.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No overdue equipment.</p>
+                  ) : (
+                    overdueRentals.map((rental) => (
+                      <div key={rental.id} className="p-4 border rounded-lg border-red-200 bg-red-50">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium text-red-800">{rental.equipmentName}</h4>
+                          <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">Overdue</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-red-700">
+                          <p>Patient: {rental.patientName}</p>
+                          <p>Mobile: {rental.mobileNumber}</p>
+                          <p>Due: {new Date(rental.returnDate).toLocaleDateString()}</p>
+                          <p>Days Late: {Math.ceil((new Date().getTime() - new Date(rental.returnDate).getTime()) / (1000 * 60 * 60 * 24))}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

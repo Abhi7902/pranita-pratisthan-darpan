@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Lock, Upload, Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { ArrowLeft, Upload, Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAppContext } from '@/contexts/AppContext';
 
-const AdminPanel = () => {
+interface AdminPanelProps {
+  onBack?: () => void;
+}
+
+const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   
@@ -104,14 +107,14 @@ const AdminPanel = () => {
     toast.success('पॉपअप यशस्वीरीत्या अपडेट केला!');
   };
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !onBack) {
     return (
       <section className="py-20 bg-gray-100 min-h-screen">
         <div className="max-w-md mx-auto px-4">
           <div className="bg-white rounded-lg cultural-shadow p-8">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-marathi-orange rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="h-8 w-8 text-white" />
+                <ArrowLeft className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-marathi-orange">Admin Login</h2>
               <p className="text-gray-600 mt-2">प्रशासकीय पॅनलमध्ये प्रवेश</p>
@@ -169,28 +172,106 @@ const AdminPanel = () => {
     <section className="py-20 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-marathi-orange mb-4">
-            प्रशासकीय पॅनल
-          </h2>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {onBack && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={onBack}
+                className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                मागे
+              </Button>
+            )}
+            <h2 className="text-4xl font-bold text-marathi-orange">
+              साइट सेटिंग्स
+            </h2>
+          </div>
           <div className="w-24 h-1 saffron-gradient mx-auto mb-6"></div>
-          <Button 
-            onClick={() => setIsLoggedIn(false)}
-            variant="outline"
-            className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
-          >
-            लॉगआउट
-          </Button>
+          {!onBack && (
+            <Button 
+              onClick={() => setIsLoggedIn(false)}
+              variant="outline"
+              className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
+            >
+              लॉगआउट
+            </Button>
+          )}
         </div>
 
-        <Tabs defaultValue="youtube" className="w-full">
+        <Tabs defaultValue="popup" className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsTrigger value="popup">पॉपअप</TabsTrigger>
             <TabsTrigger value="youtube">YouTube</TabsTrigger>
             <TabsTrigger value="gallery">फोटो गॅलरी</TabsTrigger>
-            <TabsTrigger value="popup">पॉपअप</TabsTrigger>
             <TabsTrigger value="news">बातम्या</TabsTrigger>
             <TabsTrigger value="timeline">टाइमलाइन</TabsTrigger>
             <TabsTrigger value="programs">प्रकल्प</TabsTrigger>
           </TabsList>
+
+          {/* Popup Management - Move to first */}
+          <TabsContent value="popup">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">पॉपअप व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={newPopup.enabled}
+                        onChange={(e) => setNewPopup({...newPopup, enabled: e.target.checked})}
+                        className="rounded border-marathi-orange"
+                      />
+                      <span className="text-sm font-medium">पॉपअप सक्षम करा</span>
+                    </label>
+                  </div>
+
+                  <Input 
+                    placeholder="कार्यक्रमाचे नाव" 
+                    value={newPopup.title}
+                    onChange={(e) => setNewPopup({...newPopup, title: e.target.value})}
+                    className="w-full"
+                  />
+                  <Input 
+                    placeholder="दिनांक आणि वेळ" 
+                    value={newPopup.date}
+                    onChange={(e) => setNewPopup({...newPopup, date: e.target.value})}
+                    className="w-full"
+                  />
+                  <Input 
+                    placeholder="ठिकाण" 
+                    value={newPopup.location}
+                    onChange={(e) => setNewPopup({...newPopup, location: e.target.value})}
+                    className="w-full"
+                  />
+                  <Input 
+                    placeholder="बॅनर इमेज URL (वैकल्पिक)" 
+                    value={newPopup.bannerImage || ''}
+                    onChange={(e) => setNewPopup({...newPopup, bannerImage: e.target.value})}
+                    className="w-full"
+                  />
+                  <Textarea 
+                    placeholder="तपशील" 
+                    rows={3} 
+                    value={newPopup.description}
+                    onChange={(e) => setNewPopup({...newPopup, description: e.target.value})}
+                    className="w-full"
+                  />
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
+                    onClick={handleUpdatePopup}
+                  >
+                    पॉपअप अपडेट करा
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* YouTube Management */}
           <TabsContent value="youtube">
@@ -199,17 +280,19 @@ const AdminPanel = () => {
                 <CardTitle className="text-marathi-orange">YouTube व्हिडिओ व्यवस्थापन</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="grid grid-cols-1 gap-4">
                     <Input 
                       placeholder="व्हिडिओ शीर्षक" 
                       value={newVideo.title}
                       onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
+                      className="w-full"
                     />
                     <Input 
                       placeholder="YouTube व्हिडिओ ID" 
                       value={newVideo.videoId}
                       onChange={(e) => setNewVideo({...newVideo, videoId: e.target.value})}
+                      className="w-full"
                     />
                   </div>
                   <Textarea 
@@ -217,9 +300,10 @@ const AdminPanel = () => {
                     rows={3} 
                     value={newVideo.description}
                     onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
+                    className="w-full"
                   />
                   <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
                     onClick={handleAddVideo}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -262,23 +346,26 @@ const AdminPanel = () => {
                 <CardTitle className="text-marathi-orange">बातम्या व्यवस्थापन</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-6 max-w-2xl mx-auto">
                   <Input 
                     placeholder="बातमी शीर्षक" 
                     value={newNews.title}
                     onChange={(e) => setNewNews({...newNews, title: e.target.value})}
+                    className="w-full"
                   />
                   <Textarea 
                     placeholder="बातमी सार" 
                     rows={2} 
                     value={newNews.summary}
                     onChange={(e) => setNewNews({...newNews, summary: e.target.value})}
+                    className="w-full"
                   />
                   <Textarea 
                     placeholder="संपूर्ण बातमी" 
                     rows={5} 
                     value={newNews.content}
                     onChange={(e) => setNewNews({...newNews, content: e.target.value})}
+                    className="w-full"
                   />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -286,16 +373,18 @@ const AdminPanel = () => {
                       placeholder="लेखक" 
                       value={newNews.author}
                       onChange={(e) => setNewNews({...newNews, author: e.target.value})}
+                      className="w-full"
                     />
                     <Input 
                       type="date" 
                       value={newNews.date}
                       onChange={(e) => setNewNews({...newNews, date: e.target.value})}
+                      className="w-full"
                     />
                   </div>
                   
                   <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
                     onClick={handleAddNews}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -325,17 +414,19 @@ const AdminPanel = () => {
                 <CardTitle className="text-marathi-orange">टाइमलाइन व्यवस्थापन</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-6 max-w-2xl mx-auto">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input 
                       placeholder="वर्ष" 
                       value={newTimeline.year}
                       onChange={(e) => setNewTimeline({...newTimeline, year: e.target.value})}
+                      className="w-full"
                     />
                     <Input 
                       placeholder="घटना शीर्षक" 
                       value={newTimeline.title}
                       onChange={(e) => setNewTimeline({...newTimeline, title: e.target.value})}
+                      className="w-full"
                     />
                   </div>
                   <Textarea 
@@ -343,10 +434,11 @@ const AdminPanel = () => {
                     rows={3} 
                     value={newTimeline.description}
                     onChange={(e) => setNewTimeline({...newTimeline, description: e.target.value})}
+                    className="w-full"
                   />
                   
                   <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
                     onClick={handleAddTimeline}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -383,27 +475,30 @@ const AdminPanel = () => {
                 <CardTitle className="text-marathi-orange">प्रकल्प व्यवस्थापन</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-6 max-w-2xl mx-auto">
                   <Input 
                     placeholder="प्रकल्पाचे नाव" 
                     value={newProgram.name}
                     onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
+                    className="w-full"
                   />
                   <Textarea 
                     placeholder="प्रकल्पाचे वर्णन" 
                     rows={2} 
                     value={newProgram.description}
                     onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
+                    className="w-full"
                   />
                   <Textarea 
                     placeholder="संपूर्ण तपशील" 
                     rows={4} 
                     value={newProgram.details}
                     onChange={(e) => setNewProgram({...newProgram, details: e.target.value})}
+                    className="w-full"
                   />
                   
                   <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
                     onClick={handleAddProgram}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -439,47 +534,6 @@ const AdminPanel = () => {
             </Card>
           </TabsContent>
 
-          {/* Popup Management */}
-          <TabsContent value="popup">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">पॉपअप व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <Input 
-                    placeholder="कार्यक्रमाचे नाव" 
-                    value={newPopup.title}
-                    onChange={(e) => setNewPopup({...newPopup, title: e.target.value})}
-                  />
-                  <Input 
-                    placeholder="दिनांक आणि वेळ" 
-                    value={newPopup.date}
-                    onChange={(e) => setNewPopup({...newPopup, date: e.target.value})}
-                  />
-                  <Input 
-                    placeholder="ठिकाण" 
-                    value={newPopup.location}
-                    onChange={(e) => setNewPopup({...newPopup, location: e.target.value})}
-                  />
-                  <Textarea 
-                    placeholder="तपशील" 
-                    rows={3} 
-                    value={newPopup.description}
-                    onChange={(e) => setNewPopup({...newPopup, description: e.target.value})}
-                  />
-                  
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white"
-                    onClick={handleUpdatePopup}
-                  >
-                    पॉपअप अपडेट करा
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Gallery Management */}
           <TabsContent value="gallery">
             <Card>
@@ -487,7 +541,7 @@ const AdminPanel = () => {
                 <CardTitle className="text-marathi-orange">फोटो गॅलरी व्यवस्थापन</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-6 max-w-2xl mx-auto">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">फोटो अपलोड करण्यासाठी इथे क्लिक करा</p>
@@ -497,8 +551,8 @@ const AdminPanel = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="फोटो शीर्षक" />
-                    <Input placeholder="श्रेणी" />
+                    <Input placeholder="फोटो शीर्षक" className="w-full" />
+                    <Input placeholder="श्रेणी" className="w-full" />
                   </div>
                 </div>
 

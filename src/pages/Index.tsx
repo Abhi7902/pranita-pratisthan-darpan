@@ -7,7 +7,7 @@ import PhotoGallery from '@/components/PhotoGallery';
 import NewsSection from '@/components/NewsSection';
 import YouTubeSection from '@/components/YouTubeSection';
 import FeedbackForm from '@/components/FeedbackForm';
-import AdminPanel from '@/components/AdminPanel';
+import UnifiedAdminPanel from '@/components/UnifiedAdminPanel';
 import Footer from '@/components/Footer';
 import AboutSection from '@/components/AboutSection';
 
@@ -32,7 +32,7 @@ const Index = () => {
       case 'youtube':
         return <YouTubeSection />;
       case 'admin':
-        return <AdminPanel />;
+        return <UnifiedAdminPanel />;
       default:
         return (
           <>
@@ -47,11 +47,11 @@ const Index = () => {
     <div className="min-h-screen">
       <Navbar activeSection={activeSection} onNavigate={setActiveSection} />
       
-      <main className="pt-16">
+      <main className="pt-12">
         {renderSection()}
         
-        {/* Always show feedback form except on admin page */}
-        {activeSection !== 'admin' && <FeedbackForm />}
+        {/* Only show feedback form on home page */}
+        {activeSection === 'home' && <FeedbackForm />}
       </main>
 
       {/* Always show footer except on admin page */}

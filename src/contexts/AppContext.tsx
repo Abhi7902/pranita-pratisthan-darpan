@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface TimelineEvent {
@@ -30,7 +29,6 @@ interface Program {
   name: string;
   description: string;
   details: string;
-  image?: string;
 }
 
 interface PopupData {
@@ -38,23 +36,21 @@ interface PopupData {
   description: string;
   date: string;
   location: string;
+  enabled: boolean;
+  bannerImage?: string;
 }
 
 interface AppContextType {
   timelineEvents: TimelineEvent[];
-  setTimelineEvents: (events: TimelineEvent[]) => void;
-  newsItems: NewsItem[];
-  setNewsItems: (news: NewsItem[]) => void;
-  youtubeVideos: YouTubeVideo[];
-  setYoutubeVideos: (videos: YouTubeVideo[]) => void;
-  programs: Program[];
-  setPrograms: (programs: Program[]) => void;
-  popupData: PopupData;
-  setPopupData: (popup: PopupData) => void;
   addTimelineEvent: (event: TimelineEvent) => void;
+  newsItems: NewsItem[];
   addNewsItem: (news: NewsItem) => void;
+  youtubeVideos: YouTubeVideo[];
   addYouTubeVideo: (video: YouTubeVideo) => void;
+  programs: Program[];
   addProgram: (program: Program) => void;
+  popupData: PopupData;
+  setPopupData: (data: PopupData) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -70,57 +66,84 @@ export const useAppContext = () => {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([
     {
-      year: '2020',
-      title: 'संस्था स्थापना',
-      description: 'प्रणिता प्रतिष्ठानची स्थापना समाजसेवेच्या उद्देशाने',
-      icon: 'Users',
+      year: '2009',
+      title: 'संस्थापना',
+      description: 'प्रणिता प्रतिष्ठानची स्थापना समाजसेवेच्या उद्दिष्टाने करण्यात आली.',
+      icon: 'Award',
       color: 'bg-marathi-orange'
     },
     {
-      year: '2021', 
-      title: 'शिक्षण सेवा सुरुवात',
-      description: 'गरीब मुलांसाठी मोफत शिक्षण कार्यक्रम सुरू केला',
-      icon: 'Award',
-      color: 'bg-marathi-gold'
+      year: '2012',
+      title: 'शिक्षण प्रकल्प',
+      description: 'गरिब मुलांसाठी मोफत शिक्षण कार्यक्रम सुरू केला.',
+      icon: 'Users',
+      color: 'bg-blue-500'
     },
     {
-      year: '2022',
+      year: '2015',
       title: 'आरोग्य शिबिर',
-      description: 'गावोगावी मोफत आरोग्य तपासणी शिबिरे आयोजित केली',
+      description: 'ग्रामीण भागात मोफत आरोग्य तपासणी शिबिरे आयोजित केली.',
       icon: 'Heart',
-      color: 'bg-marathi-green'
+      color: 'bg-green-500'
+    },
+    {
+      year: '2020',
+      title: 'कोविड सहाय्य',
+      description: 'महामारीदरम्यान अन्नधान्य आणि वैद्यकीय सहाय्य पुरवले.',
+      icon: 'Heart',
+      color: 'bg-red-500'
+    },
+    {
+      year: '2024',
+      title: 'डिजिटल सेवा',
+      description: 'ऑनलाइन प्लॅटफॉर्मद्वारे सेवा पुरवण्याची सुरुवात.',
+      icon: 'Award',
+      color: 'bg-purple-500'
     }
   ]);
 
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
-  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
-  
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([
+    {
+      id: '1',
+      title: 'नवीन शिक्षण केंद्र उघडणी',
+      summary: 'आमच्या संस्थेकडून नवीन शिक्षण केंद्राची उघडणी करण्यात आली.',
+      content: 'प्रणिता प्रतिष्ठानच्या वतीने गरिब मुलांसाठी एक नवीन शिक्षण केंद्र उघडण्यात आले आहे...',
+      author: 'प्रशासन',
+      date: '2024-01-15'
+    }
+  ]);
+
+  const [youtubeVideos, setYouTubeVideos] = useState<YouTubeVideo[]>([
+    {
+      id: '1',
+      title: 'संस्था परिचय',
+      videoId: 'dQw4w9WgXcQ',
+      description: 'प्रणिता प्रतिष्ठानच्या कार्याचा आढावा'
+    }
+  ]);
+
   const [programs, setPrograms] = useState<Program[]>([
     {
       id: '1',
-      name: 'शिक्षण सेवा',
-      description: 'गरीब मुलांसाठी मोफत शिक्षण सुविधा',
-      details: 'आमची शिक्षण सेवा कार्यक्रमाअंतर्गत आम्ही गरीब आणि वंचित वर्गातील मुलांना मोफत शिक्षण पुरवितो. यामध्ये पुस्तके, गणवेश, शिष्यवृत्ती आणि शिक्षकांची व्यवस्था समाविष्ट आहे.'
+      name: 'शिक्षण सहाय्य कार्यक्रम',
+      description: 'गरिब मुलांना मोफत शिक्षण पुरवणे',
+      details: 'या कार्यक्रमांतर्गत आम्ही गरिब मुलांना पुस्तके, गणवेश आणि इतर शैक्षणिक साहित्य मोफत पुरवतो.'
     },
     {
       id: '2',
       name: 'आरोग्य सेवा',
-      description: 'मोफत आरोग्य तपासणी आणि उपचार',
-      details: 'आरोग्य सेवा कार्यक्रमाअंतर्गत आम्ही नियमित आरोग्य शिबिरे आयोजित करतो. यामध्ये मोफत तपासणी, औषधे आणि डॉक्टरांचा सल्ला समाविष्ट आहे.'
-    },
-    {
-      id: '3',
-      name: 'महिला सक्षमीकरण',
-      description: 'महिलांसाठी स्वयंरोजगार आणि कौशल्य विकास',
-      details: 'महिला सक्षमीकरण कार्यक्रमाअंतर्गत आम्ही महिलांना विविध हस्तकला, शिवणकाम आणि व्यवसायिक कौशल्यांचे प्रशिक्षण देतो.'
+      description: 'ग्रामीण भागात आरोग्य सेवा पुरवणे',
+      details: 'आरोग्य शिबिरे, मोफत औषधे आणि डॉक्टरांची तपासणी या सेवा आम्ही पुरवतो.'
     }
   ]);
 
   const [popupData, setPopupData] = useState<PopupData>({
-    title: 'आगामी कार्यक्रम',
-    description: '"वार्षिक समाजसेवा दिन" - 15 जानेवारी 2024',
-    date: '15 जानेवारी 2024',
-    location: 'कॉम्युनिटी हॉल येथे'
+    title: 'वार्षिक सभा 2024',
+    description: 'प्रणिता प्रतिष्ठानची वार्षिक सभा 2024 मध्ये सर्व सदस्यांना सादर आमंत्रण.',
+    date: '15 डिसेंबर 2024, दुपारी 3:00 वाजता',
+    location: 'प्रणिता भवन, पुणे',
+    enabled: true,
+    bannerImage: ''
   });
 
   const addTimelineEvent = (event: TimelineEvent) => {
@@ -132,7 +155,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addYouTubeVideo = (video: YouTubeVideo) => {
-    setYoutubeVideos(prev => [...prev, video]);
+    setYouTubeVideos(prev => [...prev, video]);
   };
 
   const addProgram = (program: Program) => {
@@ -142,19 +165,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return (
     <AppContext.Provider value={{
       timelineEvents,
-      setTimelineEvents,
-      newsItems,
-      setNewsItems,
-      youtubeVideos,
-      setYoutubeVideos,
-      programs,
-      setPrograms,
-      popupData,
-      setPopupData,
       addTimelineEvent,
+      newsItems,
       addNewsItem,
+      youtubeVideos,
       addYouTubeVideo,
-      addProgram
+      programs,
+      addProgram,
+      popupData,
+      setPopupData
     }}>
       {children}
     </AppContext.Provider>
