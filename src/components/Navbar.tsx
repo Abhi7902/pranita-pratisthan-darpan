@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -38,8 +37,22 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0 cursor-pointer" onClick={() => onNavigate('home')}>
-              <h1 className="text-2xl font-bold saffron-gradient bg-clip-text text-transparent">
+            <div className="flex-shrink-0 cursor-pointer flex items-center gap-2" onClick={() => onNavigate('home')}>
+              <img
+                src="/logo.png"
+                alt="Pranita Pratisthan Logo"
+                className="h-10 w-auto"
+                style={{ filter: "drop-shadow(0 2px 6px #E6510055)" }}
+              />
+              <h1
+                className="text-2xl font-bold text-black text-shadow"
+                style={{
+                  fontFamily: "'Tiro Devanagari Marathi', 'Mukta', sans-serif",
+                  letterSpacing: "0.04em",
+                  color: "#E65100",
+                  textShadow: "1px 1px 8px #fff, 0 2px 10px #E6510055"
+                }}
+              >
                 प्रणिता प्रतिष्ठान
               </h1>
             </div>

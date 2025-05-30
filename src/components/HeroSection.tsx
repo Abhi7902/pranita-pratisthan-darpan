@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,14 +18,14 @@ const HeroSection = () => {
 
   return (
     <div className="relative">
-      {/* Organization name banner - top */}
+      {/* Organization name banner - top
       <div className="absolute top-0 left-0 right-0 z-30 bg-marathi-orange text-white py-3 px-4">
         <h2 className="text-lg font-bold text-center">प्रणिता प्रतिष्ठान</h2>
-      </div>
+      </div> */}
 
       {/* Hero Section */}
       <div 
-        className="h-screen bg-cover bg-center bg-no-repeat relative"
+        className="h-screen bg-cover bg-center bg-no-repeat relative pt-16"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1566552881560-0be862a7c445?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
         }}
