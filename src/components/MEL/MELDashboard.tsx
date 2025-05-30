@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,15 +35,6 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onAdminAccess}
-                className="flex items-center gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                Admin
-              </Button>
               <Button 
                 variant="outline" 
                 size="sm"

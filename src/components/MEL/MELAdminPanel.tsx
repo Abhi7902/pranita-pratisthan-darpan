@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -135,36 +134,36 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    placeholder="Equipment Name"
+                    placeholder="Enter equipment name (e.g., Blood Pressure Monitor)"
                     value={newEquipment.name}
                     onChange={(e) => setNewEquipment({...newEquipment, name: e.target.value})}
                   />
                   <Input
-                    placeholder="Photo URL"
+                    placeholder="Equipment photo URL (e.g., https://example.com/image.jpg)"
                     value={newEquipment.photo}
                     onChange={(e) => setNewEquipment({...newEquipment, photo: e.target.value})}
                   />
                   <Input
                     type="number"
-                    placeholder="Total Quantity"
+                    placeholder="Total quantity available (e.g., 10)"
                     value={newEquipment.totalQuantity}
                     onChange={(e) => setNewEquipment({...newEquipment, totalQuantity: parseInt(e.target.value) || 0})}
                   />
                   <Input
                     type="number"
-                    placeholder="Available Quantity"
+                    placeholder="Currently available quantity (e.g., 8)"
                     value={newEquipment.availableQuantity}
                     onChange={(e) => setNewEquipment({...newEquipment, availableQuantity: parseInt(e.target.value) || 0})}
                   />
                   <Input
                     type="number"
-                    placeholder="Rental Duration (days)"
+                    placeholder="Rental duration in days (e.g., 7)"
                     value={newEquipment.rentalDuration}
                     onChange={(e) => setNewEquipment({...newEquipment, rentalDuration: parseInt(e.target.value) || 7})}
                   />
                   <Input
                     type="number"
-                    placeholder="Deposit Amount"
+                    placeholder="Deposit amount in ₹ (e.g., 500)"
                     value={newEquipment.depositAmount}
                     onChange={(e) => setNewEquipment({...newEquipment, depositAmount: parseInt(e.target.value) || 0})}
                   />
