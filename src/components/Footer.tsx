@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Organization Info */}
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold saffron-gradient bg-clip-text text-transparent mb-4">
+            <h3 className="text-2xl font-bold  bg-clip-text text-marathi-orange mb-4">
               प्रणिता प्रतिष्ठान
             </h3>
             <p className="text-gray-300 mb-6 leading-relaxed">
