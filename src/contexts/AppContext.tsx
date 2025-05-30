@@ -29,6 +29,7 @@ interface Program {
   name: string;
   description: string;
   details: string;
+  image?: string;
 }
 
 interface PopupData {
@@ -127,13 +128,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: '1',
       name: 'शिक्षण सहाय्य कार्यक्रम',
       description: 'गरिब मुलांना मोफत शिक्षण पुरवणे',
-      details: 'या कार्यक्रमांतर्गत आम्ही गरिब मुलांना पुस्तके, गणवेश आणि इतर शैक्षणिक साहित्य मोफत पुरवतो.'
+      details: 'या कार्यक्रमांतर्गत आम्ही गरिब मुलांना पुस्तके, गणवेश आणि इतर शैक्षणिक साहित्य मोफत पुरवतो.',
+      image: '/placeholder.svg'
     },
     {
       id: '2',
       name: 'आरोग्य सेवा',
       description: 'ग्रामीण भागात आरोग्य सेवा पुरवणे',
-      details: 'आरोग्य शिबिरे, मोफत औषधे आणि डॉक्टरांची तपासणी या सेवा आम्ही पुरवतो.'
+      details: 'आरोग्य शिबिरे, मोफत औषधे आणि डॉक्टरांची तपासणी या सेवा आम्ही पुरवतो.',
+      image: '/placeholder.svg'
     }
   ]);
 
