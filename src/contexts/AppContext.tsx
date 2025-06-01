@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 interface TimelineEvent {
@@ -29,6 +30,7 @@ interface Program {
   name: string;
   description: string;
   details: string;
+  image?: string;
 }
 
 interface PopupData {
