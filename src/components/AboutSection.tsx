@@ -1,8 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Award, Heart, Handshake } from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
 
 const AboutSection = () => {
+  const { organizationInfo } = useAppContext();
+  
   const stats = [
     {
       icon: Users,
@@ -31,7 +34,7 @@ const AboutSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-orange-50 to-white">
+    <section className="py-20 bg-gradient-to-b from-orange-50 to-white section-watermark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold text-marathi-orange mb-6">
@@ -43,6 +46,53 @@ const AboutSection = () => {
             समस्यांवर कार्य करत आहे. आमचे मुख्य उद्दिष्ट समाजातील गरजू व्यक्तींना मदत करणे आणि 
             त्यांच्या जीवनमानात सुधारणा घडवून आणणे हे आहे.
           </p>
+        </div>
+
+        {/* Leadership Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          {/* President */}
+          <Card className="cultural-shadow animate-fade-in hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-marathi-orange mb-4">अध्यक्ष</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              {organizationInfo.president.photo && (
+                <img 
+                  src={organizationInfo.president.photo} 
+                  alt="President" 
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+                />
+              )}
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {organizationInfo.president.name || 'श्री. राज पाटील'}
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {organizationInfo.president.message || 'समाजसेवेच्या क्षेत्रात अग्रणी असलेल्या प्रणिता प्रतिष्ठानच्या अध्यक्षपदी कार्यरत आहेत. त्यांच्या नेतृत्वाखाली संस्थेने अनेक महत्वाचे प्रकल्प राबवले आहेत.'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Secretary */}
+          <Card className="cultural-shadow animate-fade-in hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-marathi-orange mb-4">सचिव</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              {organizationInfo.secretary.photo && (
+                <img 
+                  src={organizationInfo.secretary.photo} 
+                  alt="Secretary" 
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+                />
+              )}
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {organizationInfo.secretary.name || 'सौ. प्रिया शर्मा'}
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {organizationInfo.secretary.message || 'संस्थेच्या दैनंदिन कामकाजाची जबाबदारी सांभाळणाऱ्या सचिव म्हणून कार्यरत आहेत. त्यांच्या कुशल व्यवस्थापनामुळे संस्थेची कार्ये सुरळीतपणे चालतात.'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Vision & Mission */}

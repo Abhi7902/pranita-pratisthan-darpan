@@ -26,7 +26,11 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
     programs,
     addProgram,
     popupData,
-    setPopupData
+    setPopupData,
+    feedbackList,
+    markFeedbackAsRead,
+    organizationInfo,
+    updateOrganizationInfo
   } = useAppContext();
 
   // Form states
@@ -35,6 +39,7 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const [newTimeline, setNewTimeline] = useState({ year: '', title: '', description: '' });
   const [newProgram, setNewProgram] = useState({ name: '', description: '', details: '' });
   const [newPopup, setNewPopup] = useState(popupData);
+  const [newOrgInfo, setNewOrgInfo] = useState(organizationInfo);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +110,11 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const handleUpdatePopup = () => {
     setPopupData(newPopup);
     toast.success('पॉपअप यशस्वीरीत्या अपडेट केला!');
+  };
+
+  const handleUpdateOrgInfo = () => {
+    updateOrganizationInfo(newOrgInfo);
+    toast.success('संस्था माहिती यशस्वीरीत्या अपडेट केली!');
   };
 
   if (!isLoggedIn && !onBack) {
@@ -201,13 +211,15 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
         </div>
 
         <Tabs defaultValue="popup" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-8 mb-8">
             <TabsTrigger value="popup">पॉपअप</TabsTrigger>
             <TabsTrigger value="youtube">YouTube</TabsTrigger>
             <TabsTrigger value="gallery">फोटो गॅलरी</TabsTrigger>
             <TabsTrigger value="news">बातम्या</TabsTrigger>
             <TabsTrigger value="timeline">टाइमलाइन</TabsTrigger>
             <TabsTrigger value="programs">प्रकल्प</TabsTrigger>
+            <TabsTrigger value="feedback">प्रतिक्रिया</TabsTrigger>
+            <TabsTrigger value="organization">संस्था माहिती</TabsTrigger>
           </TabsList>
 
           {/* Popup Management - Move to first */}
@@ -591,6 +603,186 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                       </div>
                     ))}
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feedback Management */}
+          <TabsContent value="feedback">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">प्रतिक्रिया व्यवस्थापन ({feedbackList.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {feedbackList.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">अद्याप कोणतीही प्रतिक्रिया आलेली नाही.</p>
+                  ) : (
+                    feedbackList.map((feedback) => (
+                      <div key={feedback.id} className={`p-4 border rounded-lg ${feedback.isRead ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium text-gray-800">{feedback.name}</h4>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">{feedback.date}</span>
+                            {!feedback.isRead && (
+                              <Button
+                                size="sm"
+                                onClick={() => markFeedbackAsRead(feedback.id)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                वाचले म्हणून चिन्हांकित करा
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600 mb-3">
+                          <p><strong>ईमेल:</strong> {feedback.email || 'न दिलेले'}</p>
+                          <p><strong>संपर्क:</strong> {feedback.contactNumber || 'न दिलेले'}</p>
+                          <p><strong>रेटिंग:</strong> 
+                            <span className="ml-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span key={star} className={star <= feedback.rating ? 'text-marathi-orange' : 'text-gray-300'}>★</span>
+                              ))}
+                            </span>
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p><strong>प्रतिक्रिया:</strong> {feedback.feedback}</p>
+                          {feedback.suggestion && (
+                            <p><strong>सुचना:</strong> {feedback.suggestion}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Organization Info Management */}
+          <TabsContent value="organization">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-marathi-orange">संस्था माहिती व्यवस्थापन</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-8 max-w-4xl mx-auto">
+                  {/* President Info */}
+                  <div className="border rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-marathi-orange mb-4">अध्यक्ष माहिती</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <Input 
+                          placeholder="अध्यक्षाचे नाव" 
+                          value={newOrgInfo.president.name}
+                          onChange={(e) => setNewOrgInfo({
+                            ...newOrgInfo,
+                            president: { ...newOrgInfo.president, name: e.target.value }
+                          })}
+                          className="w-full"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            फोटो (वैकल्पिक)
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setNewOrgInfo({
+                                    ...newOrgInfo,
+                                    president: { ...newOrgInfo.president, photo: event.target?.result as string }
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Textarea 
+                          placeholder="अध्यक्षाचा संदेश/माहिती" 
+                          rows={6} 
+                          value={newOrgInfo.president.message}
+                          onChange={(e) => setNewOrgInfo({
+                            ...newOrgInfo,
+                            president: { ...newOrgInfo.president, message: e.target.value }
+                          })}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Secretary Info */}
+                  <div className="border rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-marathi-orange mb-4">सचिव माहिती</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <Input 
+                          placeholder="सचिवाचे नाव" 
+                          value={newOrgInfo.secretary.name}
+                          onChange={(e) => setNewOrgInfo({
+                            ...newOrgInfo,
+                            secretary: { ...newOrgInfo.secretary, name: e.target.value }
+                          })}
+                          className="w-full"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            फोटो (वैकल्पिक)
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setNewOrgInfo({
+                                    ...newOrgInfo,
+                                    secretary: { ...newOrgInfo.secretary, photo: event.target?.result as string }
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Textarea 
+                          placeholder="सचिवाचा संदेश/माहिती" 
+                          rows={6} 
+                          value={newOrgInfo.secretary.message}
+                          onChange={(e) => setNewOrgInfo({
+                            ...newOrgInfo,
+                            secretary: { ...newOrgInfo.secretary, message: e.target.value }
+                          })}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
+                    onClick={handleUpdateOrgInfo}
+                  >
+                    संस्था माहिती अपडेट करा
+                  </Button>
                 </div>
               </CardContent>
             </Card>

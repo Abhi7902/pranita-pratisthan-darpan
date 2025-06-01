@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -84,29 +85,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Noto Sans Devanagari', sans-serif;
-    background-image: url('/logo.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-attachment: fixed;
-    background-size: 30%;
-    opacity: 1;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url('/logo.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-attachment: fixed;
-    background-size: 30%;
-    opacity: 0.10; /* Adjust for visibility */
-    pointer-events: none;
-    z-index: -1;
   }
 }
 
@@ -125,5 +103,30 @@
   
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-watermark {
+    position: relative;
+  }
+
+  .section-watermark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/logo.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 25%;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .section-watermark > * {
+    position: relative;
+    z-index: 1;
   }
 }

@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useAppContext } from '@/contexts/AppContext';
 
 const FeedbackForm = () => {
+  const { addFeedback } = useAppContext();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    contactNumber: '',
     rating: 0,
     feedback: '',
     suggestion: ''
@@ -25,6 +28,19 @@ const FeedbackForm = () => {
       return;
     }
 
+    // Add feedback to context
+    addFeedback({
+      id: Date.now().toString(),
+      name: formData.name,
+      email: formData.email,
+      contactNumber: formData.contactNumber,
+      rating: formData.rating,
+      feedback: formData.feedback,
+      suggestion: formData.suggestion,
+      date: new Date().toISOString().split('T')[0],
+      isRead: false
+    });
+
     console.log('Feedback submitted:', formData);
     toast.success('तुमची प्रतिक्रिया यशस्वीरीत्या पाठवली गेली!');
     
@@ -32,6 +48,7 @@ const FeedbackForm = () => {
     setFormData({
       name: '',
       email: '',
+      contactNumber: '',
       rating: 0,
       feedback: '',
       suggestion: ''
@@ -43,7 +60,7 @@ const FeedbackForm = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-orange-50">
+    <section className="py-20 bg-gradient-to-b from-white to-orange-50 section-watermark">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-marathi-orange mb-6">
@@ -86,6 +103,20 @@ const FeedbackForm = () => {
                   className="border-marathi-orange/30 focus:border-marathi-orange"
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                संपर्क क्रमांक
+              </label>
+              <Input
+                id="contactNumber"
+                type="tel"
+                value={formData.contactNumber}
+                onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                placeholder="तुमचा मोबाइल नंबर"
+                className="border-marathi-orange/30 focus:border-marathi-orange"
+              />
             </div>
 
             {/* Rating */}
