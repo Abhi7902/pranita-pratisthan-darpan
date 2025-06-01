@@ -20,12 +20,12 @@ const HeroSection = () => {
   }, [popupData]);
 
   return (
-    <div className="relative section-watermark">
+    <div className="relative">
       {/* Hero Section */}
       <div 
         className="h-screen bg-cover bg-center bg-no-repeat relative pt-12"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1466442929976-97f336a657be?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center pt-20 pb-20">

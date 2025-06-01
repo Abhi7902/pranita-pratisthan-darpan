@@ -12,21 +12,16 @@ interface MELLoginProps {
 
 const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const { melUsers, setCurrentMELUser } = useMELContext();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isAdminLogin) {
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
-        onAdminAccess();
-        toast.success('Admin login successful!');
-        return;
-      } else {
-        toast.error('Invalid admin credentials');
-        return;
-      }
+    // Check for admin credentials
+    if (credentials.username === 'admin' && credentials.password === 'admin123') {
+      onAdminAccess();
+      toast.success('Admin login successful!');
+      return;
     }
 
     const user = melUsers.find(u => 
@@ -48,9 +43,7 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
           <CardTitle className="text-2xl font-bold text-blue-600">
             Medical Equipment Library
           </CardTitle>
-          <p className="text-gray-600">
-            {isAdminLogin ? 'Admin Access' : 'User Login'}
-          </p>
+          <p className="text-gray-600">User Login</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -62,7 +55,7 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
                 type="text"
                 value={credentials.username}
                 onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                placeholder={isAdminLogin ? "admin" : "Enter username"}
+                placeholder="Enter username"
                 required
               />
             </div>
@@ -75,7 +68,7 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
                 type="password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                placeholder={isAdminLogin ? "admin123" : "Enter password"}
+                placeholder="Enter password"
                 required
               />
             </div>
@@ -84,25 +77,13 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              {isAdminLogin ? 'Admin Login' : 'User Login'}
+              Login
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsAdminLogin(!isAdminLogin)}
-              className="text-blue-600"
-            >
-              {isAdminLogin ? 'Switch to User Login' : 'Admin Access'}
-            </Button>
+          <div className="mt-4 text-center text-sm text-gray-500">
+            <p>Demo User: meluser1 / mel123</p>
           </div>
-
-          {!isAdminLogin && (
-            <div className="mt-4 text-center text-sm text-gray-500">
-              <p>Demo User: meluser1 / mel123</p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

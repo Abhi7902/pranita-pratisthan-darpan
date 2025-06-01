@@ -104,29 +104,4 @@
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
-
-  .section-watermark {
-    position: relative;
-  }
-
-  .section-watermark::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/logo.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 25%;
-    opacity: 0.08;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .section-watermark > * {
-    position: relative;
-    z-index: 1;
-  }
 }
