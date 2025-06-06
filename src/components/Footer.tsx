@@ -1,5 +1,5 @@
 
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube} from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -19,12 +19,15 @@ const Footer = () => {
               <a href="#" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center hover:bg-blue-300 transition-colors">
+              <a href="https://youtube.com/@pranitapratishthan123?si=lCg-3n8B87s6IC5Y" className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-300 transition-colors">
+                <Youtube className="h-5 w-5" />
+              </a>
+              {/* <a href="#" className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center hover:bg-blue-300 transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
               <a href="#" className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors">
                 <Instagram className="h-5 w-5" />
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -48,9 +51,9 @@ const Footer = () => {
               <div className="flex items-start">
                 <MapPin className="h-5 w-5 text-marathi-orange mt-1 mr-3 flex-shrink-0" />
                 <div>
-                  <p className="text-gray-300">
-                    मुख्य कार्यालय,<br />
-                    एस.बी. रोड, पुणे - 411038<br />
+                  <p className="text-gray-300" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                    'धनश्री' ,<br />
+                    प्रभात कॉलनी, भुसावळ - 425201<br />
                     महाराष्ट्र, भारत
                   </p>
                 </div>
@@ -58,12 +61,12 @@ const Footer = () => {
               
               <div className="flex items-center">
                 <Phone className="h-5 w-5 text-marathi-orange mr-3" />
-                <span className="text-gray-300">+91 98765 43210</span>
+                <span className="text-gray-300">+91 94203 48146</span>
               </div>
               
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-marathi-orange mr-3" />
-                <span className="text-gray-300">info@pranitapratishthan.org</span>
+                <span className="text-gray-300">pranitapratibsl@gmail.com</span>
               </div>
             </div>
           </div>
