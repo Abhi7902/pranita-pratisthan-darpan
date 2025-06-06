@@ -4,36 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useMELContext } from '@/contexts/MELContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-interface MELLoginProps {
-  onAdminAccess: () => void;
-}
+const MELLogin = () => {
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
-const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const { melUsers, setCurrentMELUser } = useMELContext();
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Check for admin credentials
-    if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      onAdminAccess();
-      toast.success('Admin login successful!');
-      return;
-    }
-
-    const user = melUsers.find(u => 
-      u.username === credentials.username && u.password === credentials.password
-    );
-
-    if (user) {
-      setCurrentMELUser(user);
-      toast.success('MEL login successful!');
-    } else {
+    const { error } = await signIn(credentials.email, credentials.password);
+    
+    if (error) {
       toast.error('Invalid credentials');
+    } else {
+      toast.success('MEL login successful!');
+      navigate('/mel');
     }
+    setLoading(false);
   };
 
   return (
@@ -49,13 +41,13 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+                Email
               </label>
               <Input
-                type="text"
-                value={credentials.username}
-                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                placeholder="Enter username"
+                type="email"
+                value={credentials.email}
+                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                placeholder="Enter your email"
                 required
               />
             </div>
@@ -68,7 +60,7 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
                 type="password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                placeholder="Enter password"
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -76,14 +68,11 @@ const MELLogin = ({ onAdminAccess }: MELLoginProps) => {
             <Button 
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={loading}
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-
-          <div className="mt-4 text-center text-sm text-gray-500">
-            <p>Demo User: meluser1 / mel123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

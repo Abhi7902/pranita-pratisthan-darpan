@@ -1,7 +1,16 @@
 
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube} from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Youtube} from 'lucide-react';
 
 const Footer = () => {
+  const scrollToSection = (sectionId: string) => {
+    if (sectionId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // This would need to be implemented based on your navigation system
+      window.location.hash = sectionId;
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,12 +31,6 @@ const Footer = () => {
               <a href="https://youtube.com/@pranitapratishthan123?si=lCg-3n8B87s6IC5Y" className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-300 transition-colors">
                 <Youtube className="h-5 w-5" />
               </a>
-              {/* <a href="#" className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center hover:bg-blue-300 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a> */}
             </div>
           </div>
 
@@ -35,12 +38,12 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold text-marathi-orange mb-4">द्रुत दुवे</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">मुख्यपृष्ठ</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">आमच्याबद्दल</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">प्रकल्प</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">छायाचित्र दालन</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">बातम्या</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">संपर्क</a></li>
+              <li><button onClick={() => scrollToSection('home')} className="text-gray-300 hover:text-marathi-orange transition-colors">मुख्यपृष्ठ</button></li>
+              <li><button onClick={() => scrollToSection('about')} className="text-gray-300 hover:text-marathi-orange transition-colors">आमच्याबद्दल</button></li>
+              <li><button onClick={() => scrollToSection('gallery')} className="text-gray-300 hover:text-marathi-orange transition-colors">छायाचित्र दालन</button></li>
+              <li><button onClick={() => scrollToSection('youtube')} className="text-gray-300 hover:text-marathi-orange transition-colors">YouTube व्हिडिओ</button></li>
+              <li><button onClick={() => scrollToSection('news')} className="text-gray-300 hover:text-marathi-orange transition-colors">बातम्या</button></li>
+              <li><a href="#" className="text-gray-300 hover:text-marathi-orange transition-colors">नियम व अटी</a></li>
             </ul>
           </div>
 
