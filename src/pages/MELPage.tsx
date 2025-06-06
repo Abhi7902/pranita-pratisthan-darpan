@@ -10,7 +10,7 @@ const MELPage = () => {
   const [isAdminView, setIsAdminView] = useState(false);
 
   if (!currentMELUser) {
-    return <MELLogin onAdminAccess={() => setIsAdminView(true)} />;
+    return <MELLogin />;
   }
 
   if (isAdminView) {
