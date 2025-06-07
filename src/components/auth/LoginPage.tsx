@@ -17,13 +17,21 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(credentials.email, credentials.password);
+    const result = await signIn(credentials.email, credentials.password);
     
-    if (error) {
-      toast.error('Login failed: ' + error.message);
+    if (result.error) {
+      toast.error('Login failed: ' + result.error.message);
     } else {
       toast.success('Login successful!');
-      navigate('/');
+      
+      // Redirect based on user role
+      if (result.isAdmin) {
+        navigate('/admin');
+      } else if (result.isMELUser) {
+        navigate('/mel');
+      } else {
+        navigate('/');
+      }
     }
     setLoading(false);
   };

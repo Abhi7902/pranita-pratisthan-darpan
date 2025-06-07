@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminPanel from './AdminPanel';
-import MELAdminPanel from './MEL/MELAdminPanel';
+import SupabaseMELAdminPanel from './MEL/SupabaseMELAdminPanel';
 import { useState } from 'react';
 
 const UnifiedAdminPanel = () => {
-  const { user, isAdmin, isMELUser, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const [activePanel, setActivePanel] = useState<'main' | 'site' | 'mel'>('main');
   const navigate = useNavigate();
 
@@ -92,7 +92,7 @@ const UnifiedAdminPanel = () => {
   }
 
   if (activePanel === 'mel') {
-    return <MELAdminPanel onBackToUser={() => setActivePanel('main')} />;
+    return <SupabaseMELAdminPanel onBackToUser={() => setActivePanel('main')} />;
   }
 
   return (

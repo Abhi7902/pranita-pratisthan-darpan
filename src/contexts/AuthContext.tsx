@@ -9,7 +9,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isMELUser: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; isAdmin?: boolean; isMELUser?: boolean }>;
   signOut: () => Promise<void>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   createMELUser: (userData: { email: string; password: string; fullName: string; username: string }) => Promise<{ error: any }>;
@@ -32,6 +32,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMELUser, setIsMELUser] = useState(false);
 
+  const checkUserRoles = async (userId: string) => {
+    try {
+      console.log('Checking admin status for user:', userId);
+      
+      // Check if user is admin
+      const { data: adminData, error: adminError } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      console.log('Admin query result:', adminData, adminError);
+      
+      const { data: melData, error: melError } = await supabase
+        .from('mel_users')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      console.log('MEL query result:', melData, melError);
+
+      const isAdminUser = !!adminData && !adminError;
+      const isMELUserUser = !!melData && !melError;
+      
+      setIsAdmin(isAdminUser);
+      setIsMELUser(isMELUserUser);
+      
+      console.log('Final roles:', { isAdmin: isAdminUser, isMELUser: isMELUserUser });
+      
+      return { isAdmin: isAdminUser, isMELUser: isMELUserUser };
+    } catch (error) {
+      console.error('Error checking user roles:', error);
+      setIsAdmin(false);
+      setIsMELUser(false);
+      return { isAdmin: false, isMELUser: false };
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -43,35 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           // Check if user is admin or MEL user
           setTimeout(async () => {
-            try {
-              console.log('Checking admin status for user:', session.user.id, session.user.email);
-              
-              // Check if user is admin - just check if they exist in admins table
-              const { data: adminData, error: adminError } = await supabase
-                .from('admins')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-
-              console.log('Admin query result:', adminData, adminError);
-              
-              const { data: melData, error: melError } = await supabase
-                .from('mel_users')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-
-              console.log('MEL query result:', melData, melError);
-
-              setIsAdmin(!!adminData && !adminError);
-              setIsMELUser(!!melData && !melError);
-              
-              console.log('Final roles:', { isAdmin: !!adminData && !adminError, isMELUser: !!melData && !melError });
-            } catch (error) {
-              console.error('Error checking user roles:', error);
-              setIsAdmin(false);
-              setIsMELUser(false);
-            }
+            await checkUserRoles(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
@@ -94,10 +104,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (!error && data.user) {
+      // Check user roles immediately after login
+      const roles = await checkUserRoles(data.user.id);
+      return { error, ...roles };
+    }
+    
     return { error };
   };
 
