@@ -59,7 +59,7 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
       photo: '',
       totalQuantity: 0,
       availableQuantity: 0,
-      rentalDuration: 7,
+      rentalDuration: 0,
       depositAmount: 0
     });
 
