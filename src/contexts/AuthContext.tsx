@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -43,23 +44,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Check if user is admin or MEL user
           setTimeout(async () => {
             try {
-              const { data: adminData } = await supabase
+              console.log('Checking admin status for user:', session.user.id, session.user.email);
+              
+              // Check if user is admin - just check if they exist in admins table
+              const { data: adminData, error: adminError } = await supabase
                 .from('admins')
                 .select('*')
                 .eq('user_id', session.user.id)
-                .eq('email', 'admin')
                 .single();
+
+              console.log('Admin query result:', adminData, adminError);
               
-              const { data: melData } = await supabase
+              const { data: melData, error: melError } = await supabase
                 .from('mel_users')
                 .select('*')
                 .eq('user_id', session.user.id)
                 .single();
 
-              setIsAdmin(!!adminData);
-              setIsMELUser(!!melData);
+              console.log('MEL query result:', melData, melError);
+
+              setIsAdmin(!!adminData && !adminError);
+              setIsMELUser(!!melData && !melError);
+              
+              console.log('Final roles:', { isAdmin: !!adminData && !adminError, isMELUser: !!melData && !melError });
             } catch (error) {
               console.error('Error checking user roles:', error);
+              setIsAdmin(false);
+              setIsMELUser(false);
             }
           }, 0);
         } else {
@@ -73,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
