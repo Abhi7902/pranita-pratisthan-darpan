@@ -52,7 +52,8 @@ const UnifiedAdminPanel = () => {
     );
   }
 
-  if (!isAdmin && !isMELUser) {
+  // Only allow admin access to this panel
+  if (!isAdmin) {
     return (
       <section className="py-20 bg-gray-100 min-h-screen">
         <div className="max-w-md mx-auto px-4">
@@ -63,24 +64,34 @@ const UnifiedAdminPanel = () => {
               </div>
               <h2 className="text-2xl font-bold text-red-500">Access Denied</h2>
               <p className="text-gray-600 mt-2">आपल्याकडे प्रशासकीय अधिकार नाहीत</p>
+              <p className="text-sm text-gray-500 mt-1">Only the system administrator can access this panel</p>
             </div>
-            <Button 
-              onClick={() => navigate('/')}
-              className="w-full bg-marathi-orange hover:bg-marathi-deepOrange text-white"
-            >
-              मुख्यपृष्ठावर जा
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                onClick={() => navigate('/')}
+                className="w-full bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+              >
+                मुख्यपृष्ठावर जा
+              </Button>
+              <Button 
+                onClick={signOut}
+                variant="outline"
+                className="w-full"
+              >
+                लॉगआउट
+              </Button>
+            </div>
           </div>
         </div>
       </section>
     );
   }
 
-  if (activePanel === 'site' && isAdmin) {
+  if (activePanel === 'site') {
     return <AdminPanel onBack={() => setActivePanel('main')} />;
   }
 
-  if (activePanel === 'mel' && (isAdmin || isMELUser)) {
+  if (activePanel === 'mel') {
     return <MELAdminPanel onBackToUser={() => setActivePanel('main')} />;
   }
 
@@ -92,6 +103,7 @@ const UnifiedAdminPanel = () => {
             प्रशासकीय पॅनल
           </h2>
           <div className="w-24 h-1 saffron-gradient mx-auto mb-6"></div>
+          <p className="text-sm text-gray-600 mb-4">Administrator Panel - Full System Access</p>
           <Button 
             onClick={signOut}
             variant="outline"
@@ -102,54 +114,50 @@ const UnifiedAdminPanel = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-          {isAdmin && (
-            <Card className="cultural-shadow hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                  onClick={() => setActivePanel('site')}>
-              <CardHeader className="text-center">
-                <div className="w-20 h-20 bg-marathi-orange rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl text-white">🌐</span>
-                </div>
-                <CardTitle className="text-2xl text-marathi-orange">Site Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600 mb-4">
-                  वेबसाइट सेटिंग्स व्यवस्थापित करा
-                </p>
-                <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• फोटो गॅलरी</li>
-                  <li>• बातम्या व्यवस्थापन</li>
-                  <li>• YouTube व्हिडिओ</li>
-                  <li>• टाइमलाइन इव्हेंट्स</li>
-                  <li>• पॉपअप बॅनर</li>
-                  <li>• प्रकल्प व्यवस्थापन</li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="cultural-shadow hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                onClick={() => setActivePanel('site')}>
+            <CardHeader className="text-center">
+              <div className="w-20 h-20 bg-marathi-orange rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl text-white">🌐</span>
+              </div>
+              <CardTitle className="text-2xl text-marathi-orange">Site Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-600 mb-4">
+                वेबसाइट सेटिंग्स व्यवस्थापित करा
+              </p>
+              <ul className="text-sm text-gray-500 space-y-1">
+                <li>• फोटो गॅलरी</li>
+                <li>• बातम्या व्यवस्थापन</li>
+                <li>• YouTube व्हिडिओ</li>
+                <li>• टाइमलाइन इव्हेंट्स</li>
+                <li>• पॉपअप बॅनर</li>
+                <li>• प्रकल्प व्यवस्थापन</li>
+              </ul>
+            </CardContent>
+          </Card>
 
-          {(isAdmin || isMELUser) && (
-            <Card className="cultural-shadow hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                  onClick={() => setActivePanel('mel')}>
-              <CardHeader className="text-center">
-                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl text-white">🏥</span>
-                </div>
-                <CardTitle className="text-2xl text-blue-600">MEL Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600 mb-4">
-                  Medical Equipment Library व्यवस्थापन
-                </p>
-                <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• Equipment Management</li>
-                  <li>• User Administration</li>
-                  <li>• Rental Tracking</li>
-                  <li>• Overdue Monitoring</li>
-                  <li>• Inventory Control</li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="cultural-shadow hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                onClick={() => setActivePanel('mel')}>
+            <CardHeader className="text-center">
+              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl text-white">🏥</span>
+              </div>
+              <CardTitle className="text-2xl text-blue-600">MEL Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-600 mb-4">
+                Medical Equipment Library व्यवस्थापन
+              </p>
+              <ul className="text-sm text-gray-500 space-y-1">
+                <li>• Equipment Management</li>
+                <li>• User Administration</li>
+                <li>• Rental Tracking</li>
+                <li>• Overdue Monitoring</li>
+                <li>• Inventory Control</li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

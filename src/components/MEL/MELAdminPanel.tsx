@@ -1,19 +1,21 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMELContext } from '@/contexts/MELContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MELAdminPanelProps {
   onBackToUser: () => void;
 }
 
 const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
+  const { createMELUser } = useAuth();
   const {
     equipment,
     melUsers,
@@ -21,7 +23,6 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
     addEquipment,
     updateEquipment,
     deleteEquipment,
-    addMELUser,
     deleteMELUser,
     getOverdueRentals
   } = useMELContext();
@@ -65,26 +66,30 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
     toast.success('Equipment added successfully!');
   };
 
-  const handleAddUser = () => {
-    if (!newUser.username || !newUser.password) {
-      toast.error('Username and password are required');
+  const handleAddUser = async () => {
+    if (!newUser.username || !newUser.password || !newUser.fullName || !newUser.email) {
+      toast.error('All fields are required');
       return;
     }
 
-    addMELUser({
-      id: Date.now().toString(),
-      ...newUser,
-      createdAt: new Date().toISOString().split('T')[0]
+    const { error } = await createMELUser({
+      username: newUser.username,
+      password: newUser.password,
+      fullName: newUser.fullName,
+      email: newUser.email
     });
 
-    setNewUser({
-      username: '',
-      password: '',
-      fullName: '',
-      email: ''
-    });
-
-    toast.success('User added successfully!');
+    if (error) {
+      toast.error('Failed to create user: ' + error.message);
+    } else {
+      toast.success('MEL user created successfully!');
+      setNewUser({
+        username: '',
+        password: '',
+        fullName: '',
+        email: ''
+      });
+    }
   };
 
   const overdueRentals = getOverdueRentals();
@@ -217,7 +222,8 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Add New MEL User</CardTitle>
+                <CardTitle>Create New MEL User</CardTitle>
+                <p className="text-sm text-gray-600">Only administrators can create MEL user accounts</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -225,12 +231,6 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                     placeholder="Username"
                     value={newUser.username}
                     onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                  />
-                  <Input
-                    placeholder="Password"
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                   />
                   <Input
                     placeholder="Full Name"
@@ -243,10 +243,16 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                     value={newUser.email}
                     onChange={(e) => setNewUser({...newUser, email: e.target.value})}
                   />
+                  <Input
+                    placeholder="Password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  />
                 </div>
                 <Button onClick={handleAddUser} className="mt-4">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add User
+                  Create MEL User
                 </Button>
               </CardContent>
             </Card>
@@ -262,7 +268,10 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                       <div>
                         <h4 className="font-medium">{user.fullName}</h4>
                         <p className="text-sm text-gray-600">
-                          Username: {user.username} | Email: {user.email} | Created: {user.createdAt}
+                          Username: {user.username} | Email: {user.email}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Created: {new Date(user.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <Button 
