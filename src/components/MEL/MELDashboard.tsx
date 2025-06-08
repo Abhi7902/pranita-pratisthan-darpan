@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMELContext } from '@/contexts/MELContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { LogOut, Settings } from 'lucide-react';
 import EquipmentList from './EquipmentList';
 import RentalForm from './RentalForm';
@@ -13,7 +14,7 @@ interface MELDashboardProps {
 }
 
 const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
-  const { currentMELUser, setCurrentMELUser, getOverdueRentals } = useMELContext();
+  const { currentMELUser, setCurrentMELUser, getOverdueRentals } = useSupabaseMEL();
 
   const handleLogout = () => {
     setCurrentMELUser(null);
@@ -31,7 +32,7 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
                 Medical Equipment Library
               </h1>
               <p className="text-sm text-gray-600">
-                Welcome, {currentMELUser?.fullName}
+                Welcome, {currentMELUser?.full_name}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -83,14 +84,14 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
                     overdueRentals.map((rental) => (
                       <div key={rental.id} className="p-4 border rounded-lg border-red-200 bg-red-50">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-red-800">{rental.equipmentName}</h4>
+                          <h4 className="font-medium text-red-800">{rental.equipment_name}</h4>
                           <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">Overdue</span>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-red-700">
-                          <p>Patient: {rental.patientName}</p>
-                          <p>Mobile: {rental.mobileNumber}</p>
-                          <p>Due: {new Date(rental.returnDate).toLocaleDateString()}</p>
-                          <p>Days Late: {Math.ceil((new Date().getTime() - new Date(rental.returnDate).getTime()) / (1000 * 60 * 60 * 24))}</p>
+                          <p>Patient: {rental.patient_name}</p>
+                          <p>Mobile: {rental.mobile_number}</p>
+                          <p>Due: {new Date(rental.return_date).toLocaleDateString()}</p>
+                          <p>Days Late: {Math.ceil((new Date().getTime() - new Date(rental.return_date).getTime()) / (1000 * 60 * 60 * 24))}</p>
                         </div>
                       </div>
                     ))

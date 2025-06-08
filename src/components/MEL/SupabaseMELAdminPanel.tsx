@@ -94,7 +94,7 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
         deposit_amount: 0
       });
     } catch (error) {
-      // Error handled in context
+      console.error('Error adding equipment:', error);
     }
   };
 
