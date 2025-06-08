@@ -12,11 +12,17 @@ const MELPage = () => {
   const { currentMELUser } = useSupabaseMEL();
   const [isAdminView, setIsAdminView] = useState(false);
 
+  // Navbar handlers - MEL page doesn't use section navigation
+  const handleNavigate = (section: string) => {
+    // MEL page navigation is handled differently
+    console.log('Navigation to:', section);
+  };
+
   // If not logged in, show login
   if (!user) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="mel" onNavigate={handleNavigate} />
         <MELLogin />
       </div>
     );
@@ -26,7 +32,7 @@ const MELPage = () => {
   if (isAdmin && isAdminView) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="mel" onNavigate={handleNavigate} />
         <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />
       </div>
     );
@@ -36,7 +42,7 @@ const MELPage = () => {
   if (isAdmin && !isAdminView) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="mel" onNavigate={handleNavigate} />
         <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />
       </div>
     );
@@ -46,7 +52,7 @@ const MELPage = () => {
   if (isMELUser && currentMELUser) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="mel" onNavigate={handleNavigate} />
         <MELDashboard onAdminAccess={() => setIsAdminView(true)} />
       </div>
     );
@@ -55,7 +61,7 @@ const MELPage = () => {
   // If logged in but not authorized
   return (
     <div>
-      <Navbar />
+      <Navbar activeSection="mel" onNavigate={handleNavigate} />
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>

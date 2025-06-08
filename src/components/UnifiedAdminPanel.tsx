@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
@@ -21,10 +20,19 @@ const UnifiedAdminPanel = () => {
     }
   }, [user, loading, navigate]);
 
+  // Navbar handlers - Admin panel doesn't use section navigation
+  const handleNavigate = (section: string) => {
+    if (section === 'home') {
+      navigate('/');
+    } else {
+      console.log('Navigation to:', section);
+    }
+  };
+
   if (loading) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="admin" onNavigate={handleNavigate} />
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
           <p className="text-gray-600">Loading...</p>
         </div>
@@ -35,7 +43,7 @@ const UnifiedAdminPanel = () => {
   if (!user) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="admin" onNavigate={handleNavigate} />
         <section className="py-20 bg-gray-100 min-h-screen">
           <div className="max-w-md mx-auto px-4">
             <div className="bg-white rounded-lg cultural-shadow p-8">
@@ -63,7 +71,7 @@ const UnifiedAdminPanel = () => {
   if (!isAdmin) {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="admin" onNavigate={handleNavigate} />
         <section className="py-20 bg-gray-100 min-h-screen">
           <div className="max-w-md mx-auto px-4">
             <div className="bg-white rounded-lg cultural-shadow p-8">
@@ -100,7 +108,7 @@ const UnifiedAdminPanel = () => {
   if (activePanel === 'site') {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="admin" onNavigate={handleNavigate} />
         <AdminPanel onBack={() => setActivePanel('main')} />
       </div>
     );
@@ -109,7 +117,7 @@ const UnifiedAdminPanel = () => {
   if (activePanel === 'mel') {
     return (
       <div>
-        <Navbar />
+        <Navbar activeSection="admin" onNavigate={handleNavigate} />
         <SupabaseMELAdminPanel onBackToUser={() => setActivePanel('main')} />
       </div>
     );
@@ -117,7 +125,7 @@ const UnifiedAdminPanel = () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar activeSection="admin" onNavigate={handleNavigate} />
       <section className="py-20 bg-gray-100 min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
