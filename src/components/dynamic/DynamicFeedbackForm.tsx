@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +52,7 @@ const DynamicFeedbackForm = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-r from-marathi-orange to-yellow-400">
+    <section className="py-20 bg-gradient-to-br from-orange-50 via-orange-100 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="cultural-shadow">
           <CardHeader className="text-center">

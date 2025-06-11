@@ -25,15 +25,15 @@ const HeroSection = () => {
       <div 
         className="relative h-screen bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(255, 102, 0, 0.6), rgba(255, 215, 0, 0.4), rgba(19, 136, 8, 0.5)), url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
+          backgroundImage: `url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl mx-auto px-6">
             <div className="mb-8 flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full flex items-center justify-center">
+              {/* <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full flex items-center justify-center">
                 <Heart className="h-10 w-10 text-white" />
-              </div>
+              </div> */}
             </div>
 
             <h1 className="heading-cultural text-5xl md:text-7xl lg:text-8xl font-bold mb-6 text-shadow">
@@ -47,19 +47,19 @@ const HeroSection = () => {
               सेवा ही आमची शक्ती, संस्कृती आमचा अभिमान
             </p>
             
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <Button 
                 className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/30 text-white px-8 py-3 text-lg font-semibold rounded-full"
               >
                 आमच्याबरोबर जुडा
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
 
-      {/* Organization Banner */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t py-4 px-6">
+      {/* Organization Banner
+      <div className="absolute bottom-0 left-0 right-0 linear-gradient bg-gradient-to-br from-orange-400 to-yellow-400 backdrop-blur-sm border-t py-4 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-center">
           <div className="text-center">
             <h2 className="heading-cultural text-lg md:text-xl font-bold text-orange-600 mb-1">
@@ -70,7 +70,7 @@ const HeroSection = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Event Popup */}
       {showPopup && (
