@@ -50,9 +50,6 @@ const FeedbackForm = () => {
         return;
       }
 
-      // Add feedback to context as before (optional, only if you use local state)
-      // addFeedback({ ... });
-
       toast.success('तुमची प्रतिक्रिया यशस्वीरीत्या पाठवली गेली!');
       setFormData({
         name: '',
