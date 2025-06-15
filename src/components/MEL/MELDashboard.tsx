@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { LogOut, Settings } from 'lucide-react';
 import EquipmentList from './EquipmentList';
 import RentalForm from './RentalForm';
 import RentalHistory from './RentalHistory';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MELDashboardProps {
   onAdminAccess: () => void;
@@ -15,8 +15,10 @@ interface MELDashboardProps {
 
 const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
   const { currentMELUser, setCurrentMELUser, getOverdueRentals } = useSupabaseMEL();
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     setCurrentMELUser(null);
   };
 

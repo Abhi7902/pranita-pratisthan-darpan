@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Home } from 'lucide-react';
 
 const MELLogin = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -26,6 +26,10 @@ const MELLogin = () => {
       navigate('/mel');
     }
     setLoading(false);
+  };
+
+  const handleHome = () => {
+    navigate('/');
   };
 
   return (
@@ -65,13 +69,24 @@ const MELLogin = () => {
               />
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleHome}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Home
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

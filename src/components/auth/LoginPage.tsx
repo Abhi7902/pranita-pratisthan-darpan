@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { Home } from 'lucide-react';
 
 const LoginPage = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -34,6 +34,10 @@ const LoginPage = () => {
       }
     }
     setLoading(false);
+  };
+
+  const handleHome = () => {
+    navigate('/');
   };
 
   return (
@@ -73,13 +77,24 @@ const LoginPage = () => {
               />
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-marathi-orange hover:bg-marathi-deepOrange"
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button 
+                type="submit" 
+                className="w-full bg-marathi-orange hover:bg-marathi-deepOrange"
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleHome}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Home
+              </Button>
+            </div>
           </form>
           
           <div className="mt-4 text-center text-sm text-gray-600">
