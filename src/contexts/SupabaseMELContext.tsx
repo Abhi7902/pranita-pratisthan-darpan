@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -35,11 +34,21 @@ interface Rental {
   created_by_user_id: string;
 }
 
+interface PresidentSecretary {
+  id: string;
+  name: string;
+  role: string; // 'president' or 'secretary'
+  message: string | null;
+  photo_url: string | null;
+}
+
 interface SupabaseMELContextType {
   equipment: Equipment[];
   melUsers: MELUser[];
   rentals: Rental[];
   currentMELUser: MELUser | null;
+  president: PresidentSecretary | null;
+  secretary: PresidentSecretary | null;
   loading: boolean;
   addEquipment: (equipment: Omit<Equipment, 'id'>) => Promise<void>;
   updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<void>;
@@ -50,6 +59,9 @@ interface SupabaseMELContextType {
   getOverdueRentals: () => Rental[];
   setCurrentMELUser: (user: MELUser | null) => void;
   refreshData: () => Promise<void>;
+  updatePresidentSecretary: (
+    updates: Omit<PresidentSecretary, 'id'> & { id?: string }
+  ) => Promise<void>;
 }
 
 const SupabaseMELContext = createContext<SupabaseMELContextType | undefined>(undefined);
@@ -67,6 +79,8 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const [melUsers, setMELUsers] = useState<MELUser[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [currentMELUser, setCurrentMELUser] = useState<MELUser | null>(null);
+  const [president, setPresident] = useState<PresidentSecretary | null>(null);
+  const [secretary, setSecretary] = useState<PresidentSecretary | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, isMELUser } = useAuth();
 
@@ -132,13 +146,40 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchPresidentAndSecretary = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('president_secretary')
+        .select('*')
+        .in('role', ['president', 'secretary'])
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      if (Array.isArray(data)) {
+        const pres = data.find((r) => r.role === 'president') || null;
+        const sec = data.find((r) => r.role === 'secretary') || null;
+        setPresident(pres);
+        setSecretary(sec);
+      } else {
+        setPresident(null);
+        setSecretary(null);
+      }
+    } catch (error) {
+      console.error('Error fetching president/secretary:', error);
+      toast.error('Failed to load president/secretary info');
+      setPresident(null);
+      setSecretary(null);
+    }
+  };
+
   const refreshData = async () => {
     setLoading(true);
     await Promise.all([
       fetchEquipment(),
       fetchMELUsers(),
       fetchRentals(),
-      fetchCurrentMELUser()
+      fetchCurrentMELUser(),
+      fetchPresidentAndSecretary(),
     ]);
     setLoading(false);
   };
@@ -260,11 +301,68 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const updatePresidentSecretary = async (
+    updates: Omit<PresidentSecretary, 'id'> & { id?: string }
+  ) => {
+    try {
+      // Only allow update/insert for 'president' or 'secretary'
+      if (!['president', 'secretary'].includes(updates.role)) throw new Error('Invalid role');
+      // Find the existing record for that role if present
+      const { data: existingArr, error: selError } = await supabase
+        .from('president_secretary')
+        .select('*')
+        .eq('role', updates.role)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      if (selError) throw selError;
+
+      if (existingArr && existingArr.length > 0) {
+        // update existing entry
+        const id = existingArr[0].id;
+        const { error } = await supabase
+          .from('president_secretary')
+          .update({
+            name: updates.name,
+            message: updates.message,
+            photo_url: updates.photo_url,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id);
+
+        if (error) throw error;
+        toast.success(`Updated ${updates.role}`);
+      } else {
+        // Insert new entry
+        const { error } = await supabase
+          .from('president_secretary')
+          .insert([
+            {
+              name: updates.name,
+              role: updates.role,
+              message: updates.message,
+              photo_url: updates.photo_url,
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        if (error) throw error;
+        toast.success(`Added ${updates.role}`);
+      }
+      await fetchPresidentAndSecretary();
+    } catch (error) {
+      console.error('Error updating president/secretary:', error);
+      toast.error('Failed to update president/secretary');
+      throw error;
+    }
+  };
+
   const value = {
     equipment,
     melUsers,
     rentals,
     currentMELUser,
+    president,
+    secretary,
     loading,
     addEquipment,
     updateEquipment,
@@ -275,6 +373,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     getOverdueRentals,
     setCurrentMELUser,
     refreshData,
+    updatePresidentSecretary,
   };
 
   return (

@@ -1,11 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Award, Heart, Handshake } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 
 const AboutSection = () => {
-  const { organizationInfo } = useAppContext();
-  
+  const { president, secretary } = useSupabaseMEL();
+
   const stats = [
     {
       icon: Users,
@@ -56,18 +55,19 @@ const AboutSection = () => {
               <CardTitle className="text-2xl text-marathi-orange mb-4">अध्यक्ष</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              {organizationInfo.president.photo && (
+              {president?.photo_url && (
                 <img 
-                  src={organizationInfo.president.photo} 
+                  src={president.photo_url} 
                   alt="President" 
                   className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
                 />
               )}
               <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {organizationInfo.president.name || 'श्री. राज पाटील'}
+                {president?.name || 'श्री. राज पाटील'}
               </h3>
               <p className="text-gray-700 leading-relaxed">
-                {organizationInfo.president.message || 'समाजसेवेच्या क्षेत्रात अग्रणी असलेल्या प्रणिता प्रतिष्ठानच्या अध्यक्षपदी कार्यरत आहेत. त्यांच्या नेतृत्वाखाली संस्थेने अनेक महत्वाचे प्रकल्प राबवले आहेत.'}
+                {president?.message ||
+                  'समाजसेवेच्या क्षेत्रात अग्रणी असलेल्या प्रणिता प्रतिष्ठानच्या अध्यक्षपदी कार्यरत आहेत. त्यांच्या नेतृत्वाखाली संस्थेने अनेक महत्वाचे प्रकल्प राबवले आहेत.'}
               </p>
             </CardContent>
           </Card>
@@ -78,18 +78,19 @@ const AboutSection = () => {
               <CardTitle className="text-2xl text-marathi-orange mb-4">सचिव</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              {organizationInfo.secretary.photo && (
+              {secretary?.photo_url && (
                 <img 
-                  src={organizationInfo.secretary.photo} 
+                  src={secretary.photo_url} 
                   alt="Secretary" 
                   className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
                 />
               )}
               <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {organizationInfo.secretary.name || 'सौ. प्रिया शर्मा'}
+                {secretary?.name || 'सौ. प्रिया शर्मा'}
               </h3>
               <p className="text-gray-700 leading-relaxed">
-                {organizationInfo.secretary.message || 'संस्थेच्या दैनंदिन कामकाजाची जबाबदारी सांभाळणाऱ्या सचिव म्हणून कार्यरत आहेत. त्यांच्या कुशल व्यवस्थापनामुळे संस्थेची कार्ये सुरळीतपणे चालतात.'}
+                {secretary?.message ||
+                  'संस्थेच्या दैनंदिन कामकाजाची जबाबदारी सांभाळणाऱ्या सचिव म्हणून कार्यरत आहेत. त्यांच्या कुशल व्यवस्थापनामुळे संस्थेची कार्ये सुरळीतपणे चालतात.'}
               </p>
             </CardContent>
           </Card>
