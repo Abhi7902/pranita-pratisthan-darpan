@@ -1,5 +1,5 @@
-
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TimelineEvent {
   year: string;
@@ -93,7 +93,7 @@ interface AppContextType {
   youtubeVideos: YouTubeVideo[];
   addYouTubeVideo: (video: YouTubeVideo) => void;
   programs: Program[];
-  addProgram: (program: Program) => void;
+  addProgram: (program: Program) => Promise<void>;
   popupData: PopupData;
   setPopupData: (data: PopupData) => void;
   currentMELUser: MELUser | null;
@@ -139,6 +139,50 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   });
 
+  // --- PROGRAMS FETCH FROM SUPABASE ---
+  const fetchPrograms = async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, description, details, image_url');
+    if (error) {
+      console.error("Error fetching projects from Supabase:", error.message);
+      return;
+    }
+    // Convert to Program[] and add 'image' alias if needed
+    setPrograms(
+      data.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        details: p.details,
+        image: p.image_url || undefined,
+      }))
+    );
+  };
+
+  useEffect(() => {
+    fetchPrograms();
+  }, []);
+
+  // When a new program is added, insert to Supabase and refresh
+  const addProgram = async (program: Program) => {
+    const { error } = await supabase
+      .from('projects')
+      .insert([
+        {
+          name: program.name,
+          description: program.description,
+          details: program.details,
+          image_url: program.image || null,
+        }
+      ]);
+    if (error) {
+      console.error("Error adding program:", error.message);
+      return;
+    }
+    await fetchPrograms();
+  };
+
   const addTimelineEvent = (event: TimelineEvent) => {
     setTimelineEvents((prevEvents) => [...prevEvents, event]);
   };
@@ -149,10 +193,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addYouTubeVideo = (video: YouTubeVideo) => {
     setYouTubeVideos((prevVideos) => [...prevVideos, video]);
-  };
-
-  const addProgram = (program: Program) => {
-    setPrograms((prevPrograms) => [...prevPrograms, program]);
   };
 
   const addMELRental = (rental: MELRental) => {
