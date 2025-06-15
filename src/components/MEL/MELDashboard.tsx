@@ -25,7 +25,7 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
   const overdueRentals = getOverdueRentals();
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pt-16">
       {/* Header with welcome message and logout */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,3 +110,4 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
 };
 
 export default MELDashboard;
+
