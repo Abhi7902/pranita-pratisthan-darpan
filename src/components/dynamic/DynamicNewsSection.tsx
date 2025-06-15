@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import NewsArticleDialog from "./NewsArticleDialog";
 
 interface NewsItem {
   id: string;
@@ -17,6 +17,8 @@ interface NewsItem {
 const DynamicNewsSection = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selected, setSelected] = useState<NewsItem | null>(null);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -81,41 +83,49 @@ const DynamicNewsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {news.map((item) => (
-            <Card key={item.id} className="cultural-shadow hover:shadow-xl transition-shadow duration-300">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-xl text-gray-800 mb-3 line-clamp-2">
-                  {item.title}
-                </h3>
-                
-                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                  {item.author && (
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>{item.author}</span>
-                    </div>
-                  )}
-                  {item.date && (
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span>{new Date(item.date).toLocaleDateString('mr-IN')}</span>
-                    </div>
+            <button
+              className="text-left w-full focus:outline-none"
+              key={item.id}
+              onClick={() => {
+                setSelected(item);
+                setDialogOpen(true);
+              }}
+              aria-label={`${item.title} article`}
+            >
+              <div className="cultural-shadow hover:shadow-xl transition-shadow duration-300 rounded-lg bg-white">
+                <div className="p-6">
+                  <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+                    {item.title}
+                  </h3>
+                  {item.summary && (
+                    <p className="text-gray-600 mb-2 line-clamp-3">
+                      {item.summary}
+                    </p>
                   )}
                 </div>
-
-                {item.summary && (
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {item.summary}
-                  </p>
-                )}
-
-                <p className="text-gray-700 line-clamp-4">
-                  {item.content}
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+            </button>
           ))}
         </div>
       </div>
+      <NewsArticleDialog
+        open={dialogOpen}
+        onOpenChange={open => {
+          setDialogOpen(open);
+          if (!open) setSelected(null);
+        }}
+        news={
+          selected
+            ? {
+                title: selected.title,
+                summary: selected.summary,
+                content: selected.content,
+                author: selected.author,
+                date: selected.date,
+              }
+            : undefined
+        }
+      />
     </section>
   );
 };
