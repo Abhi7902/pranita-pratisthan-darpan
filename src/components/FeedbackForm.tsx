@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useAppContext } from '@/contexts/AppContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const FeedbackForm = () => {
   const { addFeedback } = useAppContext();
@@ -31,7 +32,7 @@ const FeedbackForm = () => {
     setLoading(true);
     try {
       // Insert to Supabase 'feedback' table directly
-      const { error } = await window.supabase
+      const { error } = await supabase
         .from('feedback')
         .insert({
           name: formData.name,
