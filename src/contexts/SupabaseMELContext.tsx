@@ -42,6 +42,18 @@ interface PresidentSecretary {
   photo_url: string | null;
 }
 
+interface PopupEvent {
+  id: string;
+  enabled: boolean;
+  title: string;
+  description?: string;
+  date?: string;
+  location?: string;
+  banner_image_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface SupabaseMELContextType {
   equipment: Equipment[];
   melUsers: MELUser[];
@@ -50,6 +62,9 @@ interface SupabaseMELContextType {
   president: PresidentSecretary | null;
   secretary: PresidentSecretary | null;
   loading: boolean;
+  popup: PopupEvent | null;
+  fetchPopup: () => Promise<void>;
+  updatePopup: (data: Partial<PopupEvent> & { id?: string; banner_file?: File | null }) => Promise<void>;
   addEquipment: (equipment: Omit<Equipment, 'id'>) => Promise<void>;
   updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<void>;
   deleteEquipment: (id: string) => Promise<void>;
@@ -82,6 +97,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const [president, setPresident] = useState<PresidentSecretary | null>(null);
   const [secretary, setSecretary] = useState<PresidentSecretary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState<PopupEvent | null>(null);
   const { user, isMELUser } = useAuth();
 
   const fetchEquipment = async () => {
@@ -172,6 +188,77 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchPopup = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('popup_events')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      setPopup(data || null);
+    } catch (error) {
+      console.error('Error fetching popup:', error);
+      toast.error('Failed to fetch popup');
+      setPopup(null);
+    }
+  };
+
+  const updatePopup = async (changes: Partial<PopupEvent> & { id?: string; banner_file?: File | null }) => {
+    try {
+      let bannerUrl: string | null | undefined = changes.banner_image_url;
+      let bannerPath: string | null | undefined = undefined;
+
+      if (changes.banner_file) {
+        const file = changes.banner_file;
+        const ext = file.name.split('.').pop();
+        const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+        const storageRes = await supabase.storage
+          .from('popup')
+          .upload(`banners/${filename}`, file, { upsert: true });
+        if (storageRes.error) throw storageRes.error;
+        const { data: { publicUrl } } = supabase.storage.from('popup').getPublicUrl(`banners/${filename}`);
+        bannerUrl = publicUrl;
+        bannerPath = `banners/${filename}`;
+      }
+
+      // Find if popup already exists
+      let popupId = changes.id;
+      if (!popupId && popup) popupId = popup.id;
+      let payload: any = {
+        enabled: changes.enabled ?? popup?.enabled ?? false,
+        title: changes.title ?? popup?.title ?? '',
+        description: changes.description ?? popup?.description ?? '',
+        date: changes.date ?? popup?.date ?? '',
+        location: changes.location ?? popup?.location ?? '',
+        updated_at: new Date().toISOString(),
+      };
+      if (bannerUrl !== undefined) {
+        payload.banner_image_url = bannerUrl;
+        payload.banner_image_path = bannerPath;
+      }
+
+      if (popupId) {
+        const { error } = await supabase
+          .from('popup_events')
+          .update(payload)
+          .eq('id', popupId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('popup_events')
+          .insert([payload]);
+        if (error) throw error;
+      }
+      toast.success('Popup updated!');
+      await fetchPopup();
+    } catch (error) {
+      console.error('Error updating popup:', error);
+      toast.error('Failed to update popup');
+    }
+  };
+
   const refreshData = async () => {
     setLoading(true);
     await Promise.all([
@@ -180,6 +267,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
       fetchRentals(),
       fetchCurrentMELUser(),
       fetchPresidentAndSecretary(),
+      fetchPopup(),
     ]);
     setLoading(false);
   };
@@ -364,6 +452,9 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     president,
     secretary,
     loading,
+    popup,
+    fetchPopup,
+    updatePopup,
     addEquipment,
     updateEquipment,
     deleteEquipment,

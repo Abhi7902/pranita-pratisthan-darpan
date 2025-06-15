@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useAppContext } from '@/contexts/AppContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 
 interface AdminPanelProps {
   onBack?: () => void;
@@ -17,166 +17,103 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   
   const {
-    timelineEvents,
-    addTimelineEvent,
-    newsItems,
-    addNewsItem,
-    youtubeVideos,
-    addYouTubeVideo,
-    programs,
-    addProgram,
-    popupData,
-    setPopupData,
-    feedbackList,
-    markFeedbackAsRead,
-    organizationInfo,
-    updateOrganizationInfo
-  } = useAppContext();
+    popup,
+    updatePopup,
+    fetchPopup,
+    president,
+    secretary,
+    updatePresidentSecretary,
+    fetchPresidentAndSecretary,
+    loading
+  } = useSupabaseMEL();
 
-  // Form states
-  const [newVideo, setNewVideo] = useState({ title: '', videoId: '', description: '' });
-  const [newNews, setNewNews] = useState({ title: '', summary: '', content: '', author: '', date: '' });
-  const [newTimeline, setNewTimeline] = useState({ year: '', title: '', description: '' });
-  const [newProgram, setNewProgram] = useState({ name: '', description: '', details: '' });
-  const [newPopup, setNewPopup] = useState(popupData);
-  const [newOrgInfo, setNewOrgInfo] = useState(organizationInfo);
+  const [editingPopup, setEditingPopup] = useState({
+    enabled: false,
+    title: '',
+    description: '',
+    date: '',
+    location: '',
+    banner_file: null as File|null,
+    banner_image_url: '',
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (loginData.username === 'admin' && loginData.password === 'admin123') {
-      setIsLoggedIn(true);
-      toast.success('यशस्वीरीत्या लॉगिन झाले!');
-    } else {
-      toast.error('चुकीचे वापरकर्ता नाव किंवा पासवर्ड');
-    }
-  };
-
-  const handleAddVideo = () => {
-    if (newVideo.title && newVideo.videoId) {
-      addYouTubeVideo({
-        id: Date.now().toString(),
-        title: newVideo.title,
-        videoId: newVideo.videoId,
-        description: newVideo.description
+  useEffect(() => {
+    if (popup) {
+      setEditingPopup({
+        enabled: Boolean(popup.enabled),
+        title: popup.title || '',
+        description: popup.description || '',
+        date: popup.date || '',
+        location: popup.location || '',
+        banner_file: null,
+        banner_image_url: popup.banner_image_url || '',
       });
-      setNewVideo({ title: '', videoId: '', description: '' });
-      toast.success('व्हिडिओ यशस्वीरीत्या जोडला!');
     }
-  };
+  }, [popup]);
 
-  const handleAddNews = () => {
-    if (newNews.title && newNews.content) {
-      addNewsItem({
-        id: Date.now().toString(),
-        title: newNews.title,
-        summary: newNews.summary,
-        content: newNews.content,
-        author: newNews.author,
-        date: newNews.date
+  const [editingPresident, setEditingPresident] = useState({
+    name: '',
+    message: '',
+    photo: null as File|null,
+    photo_url: '',
+  });
+  const [editingSecretary, setEditingSecretary] = useState({
+    name: '',
+    message: '',
+    photo: null as File|null,
+    photo_url: '',
+  });
+  useEffect(() => {
+    if (president) {
+      setEditingPresident({
+        name: president.name,
+        message: president.message || '',
+        photo: null,
+        photo_url: president.photo_url || '',
       });
-      setNewNews({ title: '', summary: '', content: '', author: '', date: '' });
-      toast.success('बातमी यशस्वीरीत्या जोडली!');
     }
-  };
-
-  const handleAddTimeline = () => {
-    if (newTimeline.year && newTimeline.title) {
-      addTimelineEvent({
-        year: newTimeline.year,
-        title: newTimeline.title,
-        description: newTimeline.description,
-        icon: 'Award',
-        color: 'bg-marathi-orange'
+    if (secretary) {
+      setEditingSecretary({
+        name: secretary.name,
+        message: secretary.message || '',
+        photo: null,
+        photo_url: secretary.photo_url || '',
       });
-      setNewTimeline({ year: '', title: '', description: '' });
-      toast.success('घटना यशस्वीरीत्या जोडली!');
     }
+  }, [president, secretary]);
+
+  const handleUpdatePopup = async () => {
+    await updatePopup({
+      ...editingPopup,
+      banner_file: editingPopup.banner_file,
+      id: popup?.id,
+    });
+    await fetchPopup();
   };
 
-  const handleAddProgram = () => {
-    if (newProgram.name && newProgram.description) {
-      addProgram({
-        id: Date.now().toString(),
-        name: newProgram.name,
-        description: newProgram.description,
-        details: newProgram.details
-      });
-      setNewProgram({ name: '', description: '', details: '' });
-      toast.success('प्रकल्प यशस्वीरीत्या जोडला!');
-    }
+  const handlePresidentUpdate = async () => {
+    await updatePresidentSecretary({
+      id: president?.id,
+      name: editingPresident.name,
+      role: 'president',
+      message: editingPresident.message,
+      photo_url: editingPresident.photo_url,
+      photo_file: editingPresident.photo
+    });
+    await fetchPresidentAndSecretary();
   };
 
-  const handleUpdatePopup = () => {
-    setPopupData(newPopup);
-    toast.success('पॉपअप यशस्वीरीत्या अपडेट केला!');
+  const handleSecretaryUpdate = async () => {
+    await updatePresidentSecretary({
+      id: secretary?.id,
+      name: editingSecretary.name,
+      role: 'secretary',
+      message: editingSecretary.message,
+      photo_url: editingSecretary.photo_url,
+      photo_file: editingSecretary.photo
+    });
+    await fetchPresidentAndSecretary();
   };
-
-  const handleUpdateOrgInfo = () => {
-    updateOrganizationInfo(newOrgInfo);
-    toast.success('संस्था माहिती यशस्वीरीत्या अपडेट केली!');
-  };
-
-  if (!isLoggedIn && !onBack) {
-    return (
-      <section className="py-20 bg-gray-100 min-h-screen">
-        <div className="max-w-md mx-auto px-4">
-          <div className="bg-white rounded-lg cultural-shadow p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-marathi-orange rounded-full flex items-center justify-center mx-auto mb-4">
-                <ArrowLeft className="h-8 w-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-marathi-orange">Admin Login</h2>
-              <p className="text-gray-600 mt-2">प्रशासकीय पॅनलमध्ये प्रवेश</p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  वापरकर्ता नाव
-                </label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={loginData.username}
-                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  placeholder="admin"
-                  className="border-marathi-orange/30 focus:border-marathi-orange"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  पासवर्ड
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  placeholder="admin123"
-                  className="border-marathi-orange/30 focus:border-marathi-orange"
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-marathi-orange hover:bg-marathi-deepOrange text-white"
-              >
-                लॉगिन करा
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center text-sm text-gray-500">
-              <p>Demo: admin / admin123</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-20 bg-gray-100 min-h-screen">
@@ -222,7 +159,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
             <TabsTrigger value="organization">संस्था माहिती</TabsTrigger>
           </TabsList>
 
-          {/* Popup Management - Move to first */}
           <TabsContent value="popup">
             <Card>
               <CardHeader>
@@ -234,61 +170,69 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                     <label className="flex items-center space-x-2">
                       <input
                         type="checkbox"
-                        checked={newPopup.enabled}
-                        onChange={(e) => setNewPopup({...newPopup, enabled: e.target.checked})}
+                        checked={editingPopup.enabled}
+                        onChange={e => setEditingPopup({ ...editingPopup, enabled: e.target.checked })}
                         className="rounded border-marathi-orange"
                       />
                       <span className="text-sm font-medium">पॉपअप सक्षम करा</span>
                     </label>
                   </div>
-
-                  <Input 
-                    placeholder="कार्यक्रमाचे नाव" 
-                    value={newPopup.title}
-                    onChange={(e) => setNewPopup({...newPopup, title: e.target.value})}
+                  <Input
+                    placeholder="कार्यक्रमाचे नाव"
+                    value={editingPopup.title}
+                    onChange={e => setEditingPopup({ ...editingPopup, title: e.target.value })}
                     className="w-full"
                   />
-                  <Input 
-                    placeholder="दिनांक आणि वेळ" 
-                    value={newPopup.date}
-                    onChange={(e) => setNewPopup({...newPopup, date: e.target.value})}
+                  <Input
+                    placeholder="दिनांक आणि वेळ"
+                    value={editingPopup.date}
+                    onChange={e => setEditingPopup({ ...editingPopup, date: e.target.value })}
                     className="w-full"
                   />
-                  <Input 
-                    placeholder="ठिकाण" 
-                    value={newPopup.location}
-                    onChange={(e) => setNewPopup({...newPopup, location: e.target.value})}
+                  <Input
+                    placeholder="ठिकाण"
+                    value={editingPopup.location}
+                    onChange={e => setEditingPopup({ ...editingPopup, location: e.target.value })}
                     className="w-full"
                   />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      बॅनर इमेज (वैकल्पिक)
+                      बॅनर इमेज (upload any aspect ratio)
                     </label>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            setNewPopup({...newPopup, bannerImage: event.target?.result as string});
-                          };
-                          reader.readAsDataURL(file);
-                        }
+                      onChange={e => {
+                        const file = e.target.files?.[0] || null;
+                        setEditingPopup({ ...editingPopup, banner_file: file });
                       }}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-marathi-orange focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
+                    {editingPopup.banner_image_url && (
+                      <div className="mt-3">
+                        <img
+                          src={editingPopup.banner_image_url}
+                          alt="Popup Banner"
+                          className="rounded-lg mx-auto max-h-56 max-w-full object-contain"
+                          style={{
+                            aspectRatio: 'auto',
+                            width: 'auto',
+                            height: 'auto',
+                            maxWidth: '100%',
+                            maxHeight: '220px'
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Textarea 
-                    placeholder="तपशील" 
-                    rows={3} 
-                    value={newPopup.description}
-                    onChange={(e) => setNewPopup({...newPopup, description: e.target.value})}
+                  <Textarea
+                    placeholder="तपशील"
+                    rows={3}
+                    value={editingPopup.description}
+                    onChange={e => setEditingPopup({ ...editingPopup, description: e.target.value })}
                     className="w-full"
                   />
-                  
-                  <Button 
+                  <Button
                     className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
                     onClick={handleUpdatePopup}
                   >
@@ -299,371 +243,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
             </Card>
           </TabsContent>
 
-          {/* YouTube Management */}
-          <TabsContent value="youtube">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">YouTube व्हिडिओ व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <div className="grid grid-cols-1 gap-4">
-                    <Input 
-                      placeholder="व्हिडिओ शीर्षक" 
-                      value={newVideo.title}
-                      onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
-                      className="w-full"
-                    />
-                    <Input 
-                      placeholder="YouTube व्हिडिओ ID" 
-                      value={newVideo.videoId}
-                      onChange={(e) => setNewVideo({...newVideo, videoId: e.target.value})}
-                      className="w-full"
-                    />
-                  </div>
-                  <Textarea 
-                    placeholder="व्हिडिओ वर्णन" 
-                    rows={3} 
-                    value={newVideo.description}
-                    onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
-                    className="w-full"
-                  />
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
-                    onClick={handleAddVideo}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    व्हिडिओ जोडा
-                  </Button>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याचे व्हिडिओ ({youtubeVideos.length})</h3>
-                  <div className="space-y-4">
-                    {youtubeVideos.map((video) => (
-                      <div key={video.id} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">{video.title}</h4>
-                          <p className="text-sm text-gray-600">ID: {video.videoId}</p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* News Management */}
-          <TabsContent value="news">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">बातम्या व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <Input 
-                    placeholder="बातमी शीर्षक" 
-                    value={newNews.title}
-                    onChange={(e) => setNewNews({...newNews, title: e.target.value})}
-                    className="w-full"
-                  />
-                  <Textarea 
-                    placeholder="बातमी सार" 
-                    rows={2} 
-                    value={newNews.summary}
-                    onChange={(e) => setNewNews({...newNews, summary: e.target.value})}
-                    className="w-full"
-                  />
-                  <Textarea 
-                    placeholder="संपूर्ण बातमी" 
-                    rows={5} 
-                    value={newNews.content}
-                    onChange={(e) => setNewNews({...newNews, content: e.target.value})}
-                    className="w-full"
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input 
-                      placeholder="लेखक" 
-                      value={newNews.author}
-                      onChange={(e) => setNewNews({...newNews, author: e.target.value})}
-                      className="w-full"
-                    />
-                    <Input 
-                      type="date" 
-                      value={newNews.date}
-                      onChange={(e) => setNewNews({...newNews, date: e.target.value})}
-                      className="w-full"
-                    />
-                  </div>
-                  
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
-                    onClick={handleAddNews}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    बातमी जोडा
-                  </Button>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याच्या बातम्या ({newsItems.length})</h3>
-                  <div className="space-y-4">
-                    {newsItems.map((news) => (
-                      <div key={news.id} className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium">{news.title}</h4>
-                        <p className="text-sm text-gray-600">{news.author} - {news.date}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Timeline Management */}
-          <TabsContent value="timeline">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">टाइमलाइन व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input 
-                      placeholder="वर्ष" 
-                      value={newTimeline.year}
-                      onChange={(e) => setNewTimeline({...newTimeline, year: e.target.value})}
-                      className="w-full"
-                    />
-                    <Input 
-                      placeholder="घटना शीर्षक" 
-                      value={newTimeline.title}
-                      onChange={(e) => setNewTimeline({...newTimeline, title: e.target.value})}
-                      className="w-full"
-                    />
-                  </div>
-                  <Textarea 
-                    placeholder="घटनेचे वर्णन" 
-                    rows={3} 
-                    value={newTimeline.description}
-                    onChange={(e) => setNewTimeline({...newTimeline, description: e.target.value})}
-                    className="w-full"
-                  />
-                  
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
-                    onClick={handleAddTimeline}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    घटना जोडा
-                  </Button>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याच्या घटना ({timelineEvents.length})</h3>
-                  <div className="space-y-4">
-                    {timelineEvents.map((event, index) => (
-                      <div key={index} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-                        <span>{event.year} - {event.title}</span>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Programs Management */}
-          <TabsContent value="programs">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">प्रकल्प व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <Input 
-                    placeholder="प्रकल्पाचे नाव" 
-                    value={newProgram.name}
-                    onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
-                    className="w-full"
-                  />
-                  <Textarea 
-                    placeholder="प्रकल्पाचे वर्णन" 
-                    rows={2} 
-                    value={newProgram.description}
-                    onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
-                    className="w-full"
-                  />
-                  <Textarea 
-                    placeholder="संपूर्ण तपशील" 
-                    rows={4} 
-                    value={newProgram.details}
-                    onChange={(e) => setNewProgram({...newProgram, details: e.target.value})}
-                    className="w-full"
-                  />
-                  
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
-                    onClick={handleAddProgram}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    प्रकल्प जोडा
-                  </Button>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याचे प्रकल्प ({programs.length})</h3>
-                  <div className="space-y-4">
-                    {programs.map((program) => (
-                      <div key={program.id} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">{program.name}</h4>
-                          <p className="text-sm text-gray-600">{program.description}</p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Gallery Management */}
-          <TabsContent value="gallery">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">फोटो गॅलरी व्यवस्थापन</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">फोटो अपलोड करण्यासाठी इथे क्लिक करा</p>
-                    <Button className="mt-4 bg-marathi-orange hover:bg-marathi-deepOrange text-white">
-                      फोटो निवडा
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="फोटो शीर्षक" className="w-full" />
-                    <Input placeholder="श्रेणी" className="w-full" />
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold mb-4">सध्याचे फोटो</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((photo) => (
-                      <div key={photo} className="relative group">
-                        <img 
-                          src={`https://images.unsplash.com/photo-155902761${photo}-cd4628902d4a?w=200&h=200&fit=crop`}
-                          alt={`Photo ${photo}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Button size="sm" variant="outline" className="text-white border-white mr-2">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Feedback Management */}
-          <TabsContent value="feedback">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-marathi-orange">प्रतिक्रिया व्यवस्थापन ({feedbackList.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {feedbackList.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">अद्याप कोणतीही प्रतिक्रिया आलेली नाही.</p>
-                  ) : (
-                    feedbackList.map((feedback) => (
-                      <div key={feedback.id} className={`p-4 border rounded-lg ${feedback.isRead ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-gray-800">{feedback.name}</h4>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-500">{feedback.date}</span>
-                            {!feedback.isRead && (
-                              <Button
-                                size="sm"
-                                onClick={() => markFeedbackAsRead(feedback.id)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                              >
-                                वाचले म्हणून चिन्हांकित करा
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600 mb-3">
-                          <p><strong>ईमेल:</strong> {feedback.email || 'न दिलेले'}</p>
-                          <p><strong>संपर्क:</strong> {feedback.contactNumber || 'न दिलेले'}</p>
-                          <p><strong>रेटिंग:</strong> 
-                            <span className="ml-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <span key={star} className={star <= feedback.rating ? 'text-marathi-orange' : 'text-gray-300'}>★</span>
-                              ))}
-                            </span>
-                          </p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <p><strong>प्रतिक्रिया:</strong> {feedback.feedback}</p>
-                          {feedback.suggestion && (
-                            <p><strong>सुचना:</strong> {feedback.suggestion}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Organization Info Management */}
           <TabsContent value="organization">
             <Card>
               <CardHeader>
@@ -671,18 +250,14 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-8 max-w-4xl mx-auto">
-                  {/* President Info */}
                   <div className="border rounded-lg p-6">
                     <h3 className="text-xl font-bold text-marathi-orange mb-4">अध्यक्ष माहिती</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <Input 
-                          placeholder="अध्यक्षाचे नाव" 
-                          value={newOrgInfo.president.name}
-                          onChange={(e) => setNewOrgInfo({
-                            ...newOrgInfo,
-                            president: { ...newOrgInfo.president, name: e.target.value }
-                          })}
+                        <Input
+                          placeholder="अध्यक्षाचे नाव"
+                          value={editingPresident.name}
+                          onChange={e => setEditingPresident({ ...editingPresident, name: e.target.value })}
                           className="w-full"
                         />
                         <div>
@@ -692,50 +267,46 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  setNewOrgInfo({
-                                    ...newOrgInfo,
-                                    president: { ...newOrgInfo.president, photo: event.target?.result as string }
-                                  });
-                                };
-                                reader.readAsDataURL(file);
-                              }
+                            onChange={e => {
+                              const file = e.target.files?.[0] || null;
+                              setEditingPresident({ ...editingPresident, photo: file });
                             }}
                             className="w-full border border-gray-300 rounded-md px-3 py-2"
                           />
+                          {editingPresident.photo_url && (
+                            <img
+                              src={editingPresident.photo_url}
+                              alt="President"
+                              className="rounded-lg mt-2 w-auto max-h-32 max-w-xs object-contain"
+                            />
+                          )}
                         </div>
                       </div>
                       <div>
-                        <Textarea 
-                          placeholder="अध्यक्षाचा संदेश/माहिती" 
-                          rows={6} 
-                          value={newOrgInfo.president.message}
-                          onChange={(e) => setNewOrgInfo({
-                            ...newOrgInfo,
-                            president: { ...newOrgInfo.president, message: e.target.value }
-                          })}
+                        <Textarea
+                          placeholder="अध्यक्षाचा संदेश/माहिती"
+                          rows={6}
+                          value={editingPresident.message}
+                          onChange={e => setEditingPresident({ ...editingPresident, message: e.target.value })}
                           className="w-full"
                         />
                       </div>
                     </div>
+                    <Button
+                      className="bg-marathi-orange hover:bg-marathi-deepOrange mt-4"
+                      onClick={handlePresidentUpdate}
+                    >
+                      अध्यक्ष माहिती अद्ययावत करा
+                    </Button>
                   </div>
-
-                  {/* Secretary Info */}
                   <div className="border rounded-lg p-6">
                     <h3 className="text-xl font-bold text-marathi-orange mb-4">सचिव माहिती</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <Input 
-                          placeholder="सचिवाचे नाव" 
-                          value={newOrgInfo.secretary.name}
-                          onChange={(e) => setNewOrgInfo({
-                            ...newOrgInfo,
-                            secretary: { ...newOrgInfo.secretary, name: e.target.value }
-                          })}
+                        <Input
+                          placeholder="सचिवाचे नाव"
+                          value={editingSecretary.name}
+                          onChange={e => setEditingSecretary({ ...editingSecretary, name: e.target.value })}
                           className="w-full"
                         />
                         <div>
@@ -745,44 +316,38 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  setNewOrgInfo({
-                                    ...newOrgInfo,
-                                    secretary: { ...newOrgInfo.secretary, photo: event.target?.result as string }
-                                  });
-                                };
-                                reader.readAsDataURL(file);
-                              }
+                            onChange={e => {
+                              const file = e.target.files?.[0] || null;
+                              setEditingSecretary({ ...editingSecretary, photo: file });
                             }}
                             className="w-full border border-gray-300 rounded-md px-3 py-2"
                           />
+                          {editingSecretary.photo_url && (
+                            <img
+                              src={editingSecretary.photo_url}
+                              alt="Secretary"
+                              className="rounded-lg mt-2 w-auto max-h-32 max-w-xs object-contain"
+                            />
+                          )}
                         </div>
                       </div>
                       <div>
-                        <Textarea 
-                          placeholder="सचिवाचा संदेश/माहिती" 
-                          rows={6} 
-                          value={newOrgInfo.secretary.message}
-                          onChange={(e) => setNewOrgInfo({
-                            ...newOrgInfo,
-                            secretary: { ...newOrgInfo.secretary, message: e.target.value }
-                          })}
+                        <Textarea
+                          placeholder="सचिवाचा संदेश/माहिती"
+                          rows={6}
+                          value={editingSecretary.message}
+                          onChange={e => setEditingSecretary({ ...editingSecretary, message: e.target.value })}
                           className="w-full"
                         />
                       </div>
                     </div>
+                    <Button
+                      className="bg-marathi-orange hover:bg-marathi-deepOrange mt-4"
+                      onClick={handleSecretaryUpdate}
+                    >
+                      सचिव माहिती अद्ययावत करा
+                    </Button>
                   </div>
-                  
-                  <Button 
-                    className="bg-marathi-orange hover:bg-marathi-deepOrange text-white w-full"
-                    onClick={handleUpdateOrgInfo}
-                  >
-                    संस्था माहिती अपडेट करा
-                  </Button>
                 </div>
               </CardContent>
             </Card>
