@@ -445,32 +445,6 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchPresidentAndSecretary = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('president_secretary')
-        .select('*')
-        .in('role', ['president', 'secretary'])
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-      if (Array.isArray(data)) {
-        const pres = data.find((r) => r.role === 'president') || null;
-        const sec = data.find((r) => r.role === 'secretary') || null;
-        setPresident(pres);
-        setSecretary(sec);
-      } else {
-        setPresident(null);
-        setSecretary(null);
-      }
-    } catch (error) {
-      console.error('Error fetching president/secretary:', error);
-      toast.error('Failed to load president/secretary info');
-      setPresident(null);
-      setSecretary(null);
-    }
-  };
-
   const value = {
     equipment,
     melUsers,
@@ -492,6 +466,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     setCurrentMELUser,
     refreshData,
     updatePresidentSecretary,
+    fetchPresidentAndSecretary,
   };
 
   return (
