@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play } from 'lucide-react';
@@ -94,7 +93,8 @@ const DynamicYouTubeSection = () => {
                   {selectedVideo === video.video_id ? (
                     <div className="aspect-video">
                       <iframe
-                        src={`https://www.youtube.com/embed/${video.video_id}?autoplay=1`}
+                        key={video.video_id} // force re-mount
+                        src={`https://www.youtube.com/embed/${video.video_id}?autoplay=1&rel=0`}
                         title={video.title}
                         className="w-full h-full rounded-t-lg"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
