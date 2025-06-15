@@ -280,9 +280,20 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     const bucket = 'president_secretary';
     const photoPath = `photos/${filename}`;
 
-    // Delete old if present
+    // Delete old file if present
     if (oldPhotoPath) {
-      await supabase.storage.from(bucket).remove([oldPhotoPath]);
+      try {
+        // Only delete if path is non-empty string
+        if (typeof oldPhotoPath === "string" && oldPhotoPath.length > 0) {
+          const removeRes = await supabase.storage.from(bucket).remove([oldPhotoPath]);
+          if (removeRes.error) {
+            // Log but don't block flow
+            console.warn("Failed to remove old photo:", removeRes.error.message);
+          }
+        }
+      } catch (err) {
+        console.warn("Error deleting photo:", err);
+      }
     }
 
     const uploadRes = await supabase.storage
@@ -290,6 +301,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
       .upload(photoPath, file, { upsert: true });
     if (uploadRes.error) throw uploadRes.error;
 
+    // Get public URL
     const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(photoPath);
     return { photo_url: publicUrl, photo_path: photoPath };
   };
@@ -317,7 +329,8 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
           existingArr && existingArr.length > 0 && existingArr[0].photo_path
             ? existingArr[0].photo_path
             : undefined;
-        // Upload and get new url/path
+
+        // Upload and get new url/path, deleting old photo if exists
         const uploaded = await uploadPresidentSecretaryPhoto(
           updates.photo_file,
           updates.role,
