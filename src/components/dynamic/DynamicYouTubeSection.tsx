@@ -32,6 +32,7 @@ interface Video {
   description: string;
   thumbnail_url: string;
   created_at: string;
+  is_news?: boolean;
 }
 
 // Extend Video to include parsedVideoId for our UI logic
@@ -49,6 +50,7 @@ const DynamicYouTubeSection = () => {
         const { data, error } = await supabase
           .from('youtube_videos')
           .select('*')
+          .eq('is_news', false) // Only fetch videos where is_news is false
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -165,4 +167,3 @@ const DynamicYouTubeSection = () => {
 };
 
 export default DynamicYouTubeSection;
-
