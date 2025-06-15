@@ -34,8 +34,12 @@ interface Video {
   created_at: string;
 }
 
+// Extend Video to include parsedVideoId for our UI logic
+type VideoWithParsedId = Video & { parsedVideoId: string };
+
 const DynamicYouTubeSection = () => {
-  const [videos, setVideos] = useState<Video[]>([]);
+  // Change type to VideoWithParsedId
+  const [videos, setVideos] = useState<VideoWithParsedId[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +54,7 @@ const DynamicYouTubeSection = () => {
         if (error) throw error;
 
         // Always parse the correct video ID before use
-        const videosWithThumbnails = (data || []).map(video => {
+        const videosWithThumbnails: VideoWithParsedId[] = (data || []).map((video: Video) => {
           const parsedVideoId = extractYouTubeVideoId(video.video_id ?? '');
           return {
             ...video,
@@ -161,3 +165,4 @@ const DynamicYouTubeSection = () => {
 };
 
 export default DynamicYouTubeSection;
+
