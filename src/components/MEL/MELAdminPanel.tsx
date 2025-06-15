@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMELContext } from '@/contexts/MELContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface MELAdminPanelProps {
@@ -24,50 +24,50 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
     updateEquipment,
     deleteEquipment,
     deleteMELUser,
-    getOverdueRentals
-  } = useMELContext();
+    getOverdueRentals,
+    refreshData,
+    loading
+  } = useSupabaseMEL();
 
   const [newEquipment, setNewEquipment] = useState({
     name: '',
-    photo: '',
-    totalQuantity: 0,
-    availableQuantity: 0,
-    rentalDuration: 7,
-    depositAmount: 0
+    photo_url: '',
+    total_quantity: 0,
+    available_quantity: 0,
+    rental_duration: 7,
+    deposit_amount: 0
   });
 
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
-    fullName: '',
+    full_name: '',
     email: ''
   });
 
-  const handleAddEquipment = () => {
+  const handleAddEquipment = async () => {
     if (!newEquipment.name) {
       toast.error('Equipment name is required');
       return;
     }
 
-    addEquipment({
-      id: Date.now().toString(),
-      ...newEquipment
-    });
-
-    setNewEquipment({
-      name: '',
-      photo: '',
-      totalQuantity: 0,
-      availableQuantity: 0,
-      rentalDuration: 0,
-      depositAmount: 0
-    });
-
-    toast.success('Equipment added successfully!');
+    try {
+      await addEquipment(newEquipment);
+      setNewEquipment({
+        name: '',
+        photo_url: '',
+        total_quantity: 0,
+        available_quantity: 0,
+        rental_duration: 7,
+        deposit_amount: 0
+      });
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+    }
   };
 
   const handleAddUser = async () => {
-    if (!newUser.username || !newUser.password || !newUser.fullName || !newUser.email) {
+    if (!newUser.username || !newUser.password || !newUser.full_name || !newUser.email) {
       toast.error('All fields are required');
       return;
     }
@@ -75,7 +75,7 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
     const { error } = await createMELUser({
       username: newUser.username,
       password: newUser.password,
-      fullName: newUser.fullName,
+      fullName: newUser.full_name,
       email: newUser.email
     });
 
@@ -86,13 +86,22 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
       setNewUser({
         username: '',
         password: '',
-        fullName: '',
+        full_name: '',
         email: ''
       });
+      await refreshData();
     }
   };
 
   const overdueRentals = getOverdueRentals();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -139,38 +148,38 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    placeholder="Enter equipment name (e.g., Blood Pressure Monitor)"
+                    placeholder="Equipment name"
                     value={newEquipment.name}
                     onChange={(e) => setNewEquipment({...newEquipment, name: e.target.value})}
                   />
                   <Input
-                    placeholder="Equipment photo URL (e.g., https://example.com/image.jpg)"
-                    value={newEquipment.photo}
-                    onChange={(e) => setNewEquipment({...newEquipment, photo: e.target.value})}
+                    placeholder="Equipment photo URL"
+                    value={newEquipment.photo_url}
+                    onChange={(e) => setNewEquipment({...newEquipment, photo_url: e.target.value})}
                   />
                   <Input
                     type="number"
-                    placeholder="Total quantity available (e.g., 10)"
-                    value={newEquipment.totalQuantity}
-                    onChange={(e) => setNewEquipment({...newEquipment, totalQuantity: parseInt(e.target.value) || 0})}
+                    placeholder="Total quantity"
+                    value={newEquipment.total_quantity}
+                    onChange={(e) => setNewEquipment({...newEquipment, total_quantity: parseInt(e.target.value) || 0})}
                   />
                   <Input
                     type="number"
-                    placeholder="Currently available quantity (e.g., 8)"
-                    value={newEquipment.availableQuantity}
-                    onChange={(e) => setNewEquipment({...newEquipment, availableQuantity: parseInt(e.target.value) || 0})}
+                    placeholder="Available quantity"
+                    value={newEquipment.available_quantity}
+                    onChange={(e) => setNewEquipment({...newEquipment, available_quantity: parseInt(e.target.value) || 0})}
                   />
                   <Input
                     type="number"
-                    placeholder="Rental duration in days (e.g., 7)"
-                    value={newEquipment.rentalDuration}
-                    onChange={(e) => setNewEquipment({...newEquipment, rentalDuration: parseInt(e.target.value) || 7})}
+                    placeholder="Rental duration (days)"
+                    value={newEquipment.rental_duration}
+                    onChange={(e) => setNewEquipment({...newEquipment, rental_duration: parseInt(e.target.value) || 7})}
                   />
                   <Input
                     type="number"
-                    placeholder="Deposit amount in ₹ (e.g., 500)"
-                    value={newEquipment.depositAmount}
-                    onChange={(e) => setNewEquipment({...newEquipment, depositAmount: parseInt(e.target.value) || 0})}
+                    placeholder="Deposit amount (₹)"
+                    value={newEquipment.deposit_amount}
+                    onChange={(e) => setNewEquipment({...newEquipment, deposit_amount: parseInt(e.target.value) || 0})}
                   />
                 </div>
                 <Button onClick={handleAddEquipment} className="mt-4">
@@ -189,13 +198,15 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                   {equipment.map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <img src={item.photo} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                        {item.photo_url && (
+                          <img src={item.photo_url} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                        )}
                         <div>
                           <h4 className="font-medium">{item.name}</h4>
                           <p className="text-sm text-gray-600">
-                            Available: {item.availableQuantity}/{item.totalQuantity} | 
-                            Duration: {item.rentalDuration} days | 
-                            Deposit: ₹{item.depositAmount}
+                            Available: {item.available_quantity}/{item.total_quantity} | 
+                            Duration: {item.rental_duration} days | 
+                            Deposit: ₹{item.deposit_amount}
                           </p>
                         </div>
                       </div>
@@ -234,8 +245,8 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                   />
                   <Input
                     placeholder="Full Name"
-                    value={newUser.fullName}
-                    onChange={(e) => setNewUser({...newUser, fullName: e.target.value})}
+                    value={newUser.full_name}
+                    onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
                   />
                   <Input
                     placeholder="Email"
@@ -266,12 +277,12 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                   {melUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h4 className="font-medium">{user.fullName}</h4>
+                        <h4 className="font-medium">{user.full_name}</h4>
                         <p className="text-sm text-gray-600">
                           Username: {user.username} | Email: {user.email}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Created: {new Date(user.createdAt).toLocaleDateString()}
+                          Created: {new Date(user.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <Button 
@@ -299,16 +310,16 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                   {rentals.map((rental) => (
                     <div key={rental.id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium">{rental.equipmentName}</h4>
+                        <h4 className="font-medium">{rental.equipment_name}</h4>
                         <Badge variant={rental.status === 'returned' ? 'secondary' : 'default'}>
                           {rental.status}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600">
-                        <p>Patient: {rental.patientName}</p>
-                        <p>Mobile: {rental.mobileNumber}</p>
-                        <p>Pickup: {new Date(rental.pickupDate).toLocaleDateString()}</p>
-                        <p>Return: {new Date(rental.returnDate).toLocaleDateString()}</p>
+                        <p>Patient: {rental.patient_name}</p>
+                        <p>Mobile: {rental.mobile_number}</p>
+                        <p>Pickup: {new Date(rental.pickup_date).toLocaleDateString()}</p>
+                        <p>Return: {new Date(rental.return_date).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}
@@ -330,14 +341,14 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
                     overdueRentals.map((rental) => (
                       <div key={rental.id} className="p-4 border rounded-lg border-red-200 bg-red-50">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-red-800">{rental.equipmentName}</h4>
+                          <h4 className="font-medium text-red-800">{rental.equipment_name}</h4>
                           <Badge variant="destructive">Overdue</Badge>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-red-700">
-                          <p>Patient: {rental.patientName}</p>
-                          <p>Mobile: {rental.mobileNumber}</p>
-                          <p>Due: {new Date(rental.returnDate).toLocaleDateString()}</p>
-                          <p>Days Late: {Math.ceil((new Date().getTime() - new Date(rental.returnDate).getTime()) / (1000 * 60 * 60 * 24))}</p>
+                          <p>Patient: {rental.patient_name}</p>
+                          <p>Mobile: {rental.mobile_number}</p>
+                          <p>Due: {new Date(rental.return_date).toLocaleDateString()}</p>
+                          <p>Days Late: {Math.ceil((new Date().getTime() - new Date(rental.return_date).getTime()) / (1000 * 60 * 60 * 24))}</p>
                         </div>
                       </div>
                     ))
@@ -353,3 +364,4 @@ const MELAdminPanel = ({ onBackToUser }: MELAdminPanelProps) => {
 };
 
 export default MELAdminPanel;
+
