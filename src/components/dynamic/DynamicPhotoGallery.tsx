@@ -3,30 +3,51 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 interface Photo {
   id: string;
   title: string;
-  category: string;
+  category?: string | null;
   image_url: string;
   created_at: string;
+  project_id?: string | null;
+}
+
+interface Project {
+  id: string;
+  name: string;
 }
 
 const DynamicPhotoGallery = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  // State to handle popup dialog and currently selected photo
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Fetch projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, name')
+        .order('name');
+      if (!error) setProjects(data || []);
+    };
+    fetchProjects();
+  }, []);
+
+  // Fetch photos
   useEffect(() => {
     const fetchPhotos = async () => {
+      setLoading(true);
       try {
         const { data, error } = await supabase
           .from('photo_gallery')
           .select('*')
           .order('created_at', { ascending: false });
-
         if (error) throw error;
         setPhotos(data || []);
       } catch (error) {
@@ -35,9 +56,13 @@ const DynamicPhotoGallery = () => {
         setLoading(false);
       }
     };
-
     fetchPhotos();
   }, []);
+
+  // Filter photos by selected project
+  const filteredPhotos = selectedProjectId
+    ? photos.filter((p) => p.project_id === selectedProjectId)
+    : photos;
 
   if (loading) {
     return (
@@ -70,7 +95,7 @@ const DynamicPhotoGallery = () => {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-marathi-orange mb-4">
             छायाचित्र दालन
           </h2>
@@ -80,8 +105,32 @@ const DynamicPhotoGallery = () => {
           </p>
         </div>
 
+        {/* Project Category Filter */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <button
+            className={`px-6 py-2 rounded-full font-medium transition-all ${selectedProjectId === null ? 'bg-marathi-orange text-white cultural-shadow' : 'bg-gray-100 text-gray-700 hover:bg-marathi-orange/10'}`}
+            onClick={() => setSelectedProjectId(null)}
+          >
+            सर्व
+          </button>
+          {projects.map((project) => (
+            <button
+              key={project.id}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${
+                selectedProjectId === project.id
+                  ? 'bg-marathi-orange text-white cultural-shadow'
+                  : 'bg-gray-100 text-gray-700 hover:bg-marathi-orange/10'
+              }`}
+              onClick={() => setSelectedProjectId(project.id)}
+            >
+              {project.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Photo Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {photos.map((photo) => (
+          {filteredPhotos.map((photo) => (
             <Dialog key={photo.id} open={isDialogOpen && selectedPhoto?.id === photo.id} onOpenChange={(open) => {
               setIsDialogOpen(open);
               if (!open) setSelectedPhoto(null);
@@ -113,12 +162,17 @@ const DynamicPhotoGallery = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-lg text-gray-800 mb-2">{photo.title}</h3>
-                      <p className="text-sm text-gray-600">{photo.category}</p>
+                      <p className="text-sm text-gray-600 italic">
+                        {
+                          photo.project_id
+                            ? (projects.find(proj => proj.id === photo.project_id)?.name || '...')
+                            : (photo.category || '')
+                        }
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
               </DialogTrigger>
-              {/* Modal for large image */}
               <DialogContent className="max-w-xl w-full bg-white shadow-lg rounded-lg p-0">
                 {selectedPhoto?.id === photo.id && (
                   <div>
@@ -129,7 +183,10 @@ const DynamicPhotoGallery = () => {
                     />
                     <div className="p-6 text-center">
                       <h3 className="font-bold text-2xl text-marathi-orange mb-2">{selectedPhoto.title}</h3>
-                      <p className="text-md text-gray-700">{selectedPhoto.category}</p>
+                      <p className="text-md text-gray-700">{selectedPhoto.project_id
+                        ? (projects.find(proj => proj.id === selectedPhoto.project_id)?.name || '...')
+                        : (selectedPhoto.category || '')
+                      }</p>
                     </div>
                   </div>
                 )}

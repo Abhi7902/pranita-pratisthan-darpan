@@ -229,33 +229,44 @@ export type Database = {
       }
       photo_gallery: {
         Row: {
-          category: string
+          category: string | null
           created_at: string
           id: string
           image_path: string
           image_url: string
+          project_id: string | null
           title: string
           uploaded_by: string | null
         }
         Insert: {
-          category: string
+          category?: string | null
           created_at?: string
           id?: string
           image_path: string
           image_url: string
+          project_id?: string | null
           title: string
           uploaded_by?: string | null
         }
         Update: {
-          category?: string
+          category?: string | null
           created_at?: string
           id?: string
           image_path?: string
           image_url?: string
+          project_id?: string | null
           title?: string
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_photo_gallery_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       popup_events: {
         Row: {
