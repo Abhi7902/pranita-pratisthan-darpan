@@ -1,14 +1,17 @@
 
+import React, { useState } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Award, Heart } from 'lucide-react';
+import OrganizationInfoDialog from "@/components/OrganizationInfoDialog";
 
 const ProgramPage = () => {
   const { programId } = useParams();
   const navigate = useNavigate();
   const { programs } = useAppContext();
-  
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   const program = programs.find(p => p.id === programId);
 
   if (!program) {
@@ -82,9 +85,15 @@ const ProgramPage = () => {
             <p className="text-gray-700">
               या प्रकल्पाबद्दल अधिक माहितीसाठी किंवा सहभागी होण्यासाठी कृपया आमच्याशी संपर्क साधा.
             </p>
-            <Button className="mt-4 bg-marathi-orange hover:bg-marathi-deepOrange text-white">
+            <Button 
+              className="mt-4 bg-marathi-orange hover:bg-marathi-deepOrange text-white"
+              type="button"
+              onClick={() => setContactDialogOpen(true)}
+            >
               आमच्याशी संपर्क साधा
             </Button>
+            {/* Popup with organization info */}
+            <OrganizationInfoDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen} />
           </div>
         </div>
       </div>
