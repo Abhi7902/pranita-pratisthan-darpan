@@ -1,9 +1,9 @@
-import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import EquipmentList from './EquipmentList';
 import RentalForm from './RentalForm';
 import RentalHistory from './RentalHistory';
@@ -26,6 +26,7 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Header with welcome message and logout */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -34,7 +35,7 @@ const MELDashboard = ({ onAdminAccess }: MELDashboardProps) => {
                 Medical Equipment Library
               </h1>
               <p className="text-sm text-gray-600">
-                Welcome, {currentMELUser?.full_name}
+                Welcome{currentMELUser?.full_name ? `, ${currentMELUser.full_name}` : ''}
               </p>
             </div>
             <div className="flex items-center space-x-4">
