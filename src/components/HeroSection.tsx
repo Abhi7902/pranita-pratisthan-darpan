@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,12 +89,6 @@ const HeroSection = () => {
                     </p>
                   </div>
                 )}
-                <Button
-                  onClick={() => setShowPopup(false)}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-full"
-                >
-                  अधिक माहिती
-                </Button>
               </div>
             </div>
           </div>
