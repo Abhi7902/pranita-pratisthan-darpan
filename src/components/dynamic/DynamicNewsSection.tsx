@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import NewsArticleDialog from "./NewsArticleDialog";
 import { supabase } from '@/integrations/supabase/client';
 import { Youtube } from "lucide-react";
+import { extractYouTubeVideoId } from "@/lib/youtube";
 
 // NewsItem type
 interface NewsItem {
@@ -190,35 +190,37 @@ function YouTubeNewsPanel({
         <span className="font-bold text-marathi-orange">YouTube News Videos</span>
       </div>
       <div className="flex flex-col gap-2">
-        {youtubeVideos.map((yt) => (
-          <a
-            key={yt.id}
-            href={`https://www.youtube.com/watch?v=${yt.video_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:bg-red-50 transition-colors rounded-md px-2 py-2 flex items-center gap-2 text-gray-800 group"
-          >
-            {yt.thumbnail_url ? (
-              <img
-                src={yt.thumbnail_url}
-                alt={yt.title}
-                className="w-10 h-7 object-cover rounded-sm border"
-              />
-            ) : (
-              <div className="w-10 h-7 bg-gray-200 flex items-center justify-center rounded-sm">
-                <Youtube className="w-4 h-4 text-gray-400" />
-              </div>
-            )}
-            <span className="line-clamp-2 flex-1 group-hover:text-red-700 text-sm font-medium">
-              {yt.title}
-            </span>
-            <Youtube className="w-4 h-4 text-red-400 opacity-80 group-hover:scale-110" />
-          </a>
-        ))}
+        {youtubeVideos.map((yt) => {
+          const youtubeId = extractYouTubeVideoId(yt.video_id ?? "");
+          return (
+            <a
+              key={yt.id}
+              href={`https://www.youtube.com/watch?v=${youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:bg-red-50 transition-colors rounded-md px-2 py-2 flex items-center gap-2 text-gray-800 group"
+            >
+              {yt.thumbnail_url ? (
+                <img
+                  src={yt.thumbnail_url}
+                  alt={yt.title}
+                  className="w-10 h-7 object-cover rounded-sm border"
+                />
+              ) : (
+                <div className="w-10 h-7 bg-gray-200 flex items-center justify-center rounded-sm">
+                  <Youtube className="w-4 h-4 text-gray-400" />
+                </div>
+              )}
+              <span className="line-clamp-2 flex-1 group-hover:text-red-700 text-sm font-medium">
+                {yt.title}
+              </span>
+              <Youtube className="w-4 h-4 text-red-400 opacity-80 group-hover:scale-110" />
+            </a>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 export default DynamicNewsSection;
-

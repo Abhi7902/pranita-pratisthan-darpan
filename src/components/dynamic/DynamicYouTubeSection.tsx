@@ -1,29 +1,29 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { extractYouTubeVideoId } from "@/lib/youtube";
 
 // Helper to extract the actual video ID from various URL formats
-function extractYouTubeVideoId(urlOrId: string): string {
-  if (!urlOrId) return '';
-  // Handle plain video ID
-  if (/^[\w-]{11}$/.test(urlOrId)) return urlOrId;
-  // youtu.be style
-  let match = urlOrId.match(/youtu\.be\/([\w-]{11})/);
-  if (match) return match[1];
-  // youtube.com style
-  match = urlOrId.match(/[?&]v=([\w-]{11})/);
-  if (match) return match[1];
-  // Shorts
-  match = urlOrId.match(/shorts\/([\w-]{11})/);
-  if (match) return match[1];
-  // If "embed/" in URL
-  match = urlOrId.match(/embed\/([\w-]{11})/);
-  if (match) return match[1];
-  // If all fails, return whole string (maybe it's just almost correct)
-  return urlOrId;
-}
+// function extractYouTubeVideoId(urlOrId: string): string {
+//   if (!urlOrId) return '';
+//   // Handle plain video ID
+//   if (/^[\w-]{11}$/.test(urlOrId)) return urlOrId;
+//   // youtu.be style
+//   let match = urlOrId.match(/youtu\.be\/([\w-]{11})/);
+//   if (match) return match[1];
+//   // youtube.com style
+//   match = urlOrId.match(/[?&]v=([\w-]{11})/);
+//   if (match) return match[1];
+//   // Shorts
+//   match = urlOrId.match(/shorts\/([\w-]{11})/);
+//   if (match) return match[1];
+//   // If "embed/" in URL
+//   match = urlOrId.match(/embed\/([\w-]{11})/);
+//   if (match) return match[1];
+//   // If all fails, return whole string (maybe it's just almost correct)
+//   return urlOrId;
+// }
 
 interface Video {
   id: string;
