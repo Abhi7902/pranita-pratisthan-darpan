@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,7 +98,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       role: 'president',
       message: editingPresident.message,
       photo_url: editingPresident.photo_url,
-      photo_file: editingPresident.photo
     });
     await fetchPresidentAndSecretary();
   };
@@ -110,7 +109,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       role: 'secretary',
       message: editingSecretary.message,
       photo_url: editingSecretary.photo_url,
-      photo_file: editingSecretary.photo
     });
     await fetchPresidentAndSecretary();
   };
