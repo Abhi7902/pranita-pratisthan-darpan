@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,23 +131,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const createMELUser = async (userData: { email: string; password: string; fullName: string; username: string }) => {
-    // Only admin can create MEL users
     if (!isAdmin) {
       return { error: { message: 'Unauthorized' } };
     }
 
-    // Create auth user
+    // Create Supabase Auth user, force email to be confirmed ("email_confirm": true)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: userData.email,
       password: userData.password,
-      email_confirm: true
+      email_confirm: true,
     });
 
     if (authError) {
       return { error: authError };
     }
 
-    // Create MEL user record
+    // Add MEL user DB record
     const { error: melError } = await supabase
       .from('mel_users')
       .insert({
@@ -157,6 +155,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         full_name: userData.fullName,
         email: userData.email
       });
+
+    // TODO: Optionally send mail (with info) to admin or user here via an edge function.
 
     return { error: melError };
   };

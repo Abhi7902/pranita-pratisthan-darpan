@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Send, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,40 +18,54 @@ const FeedbackForm = () => {
   });
 
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.feedback) {
       toast.error('कृपया नाव आणि प्रतिक्रिया भरा');
       return;
     }
 
-    // Add feedback to context
-    addFeedback({
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      contactNumber: formData.contactNumber,
-      rating: formData.rating,
-      feedback: formData.feedback,
-      suggestion: formData.suggestion,
-      date: new Date().toISOString().split('T')[0],
-      isRead: false
-    });
+    setLoading(true);
+    try {
+      // Insert to Supabase 'feedback' table directly
+      const { error } = await window.supabase
+        .from('feedback')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          contact_number: formData.contactNumber,
+          rating: formData.rating || null,
+          feedback: formData.feedback,
+          suggestion: formData.suggestion,
+        });
 
-    console.log('Feedback submitted:', formData);
-    toast.success('तुमची प्रतिक्रिया यशस्वीरीत्या पाठवली गेली!');
-    
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      contactNumber: '',
-      rating: 0,
-      feedback: '',
-      suggestion: ''
-    });
+      if (error) {
+        console.error('Feedback submission error:', error);
+        toast.error(`Feedback failed: ${error.message || 'Unknown error'}`);
+        setLoading(false);
+        return;
+      }
+
+      // Add feedback to context as before (optional, only if you use local state)
+      // addFeedback({ ... });
+
+      toast.success('तुमची प्रतिक्रिया यशस्वीरीत्या पाठवली गेली!');
+      setFormData({
+        name: '',
+        email: '',
+        contactNumber: '',
+        rating: 0,
+        feedback: '',
+        suggestion: ''
+      });
+    } catch (err) {
+      console.error('Feedback exception:', err);
+      toast.error('Unexpected error sending feedback.');
+    }
+    setLoading(false);
   };
 
   const handleStarClick = (rating: number) => {
@@ -181,9 +194,10 @@ const FeedbackForm = () => {
               <Button
                 type="submit"
                 className="bg-marathi-orange hover:bg-marathi-deepOrange text-white px-8 py-3 text-lg"
+                disabled={loading}
               >
                 <Send className="h-5 w-5 mr-2" />
-                प्रतिक्रिया पाठवा
+                {loading ? 'पाठवत आहे...' : 'प्रतिक्रिया पाठवा'}
               </Button>
             </div>
           </form>

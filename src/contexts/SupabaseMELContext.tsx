@@ -99,7 +99,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const [secretary, setSecretary] = useState<PresidentSecretary | null>(null);
   const [loading, setLoading] = useState(true);
   const [popup, setPopup] = useState<PopupEvent | null>(null);
-  const { user, isMELUser } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchEquipment = async () => {
     try {
@@ -147,7 +147,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const fetchCurrentMELUser = async () => {
-    if (!user || !isMELUser) return;
+    if (!user || !isAdmin) return;
     
     try {
       const { data, error } = await supabase
@@ -376,16 +376,16 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     refreshData();
-  }, [user, isMELUser]);
+  }, [user, isAdmin]);
 
   const addEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
+    if (!isAdmin) {
+      toast.error('Unauthorized: Only admin can add equipment');
+      throw new Error('Unauthorized');
+    }
     try {
-      const { error } = await supabase
-        .from('equipment_inventory')
-        .insert([equipmentData]);
-      
+      const { error } = await supabase.from('equipment_inventory').insert([equipmentData]);
       if (error) throw error;
-      
       toast.success('Equipment added successfully!');
       await fetchEquipment();
     } catch (error) {
@@ -396,14 +396,13 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateEquipment = async (id: string, updates: Partial<Equipment>) => {
+    if (!isAdmin) {
+      toast.error('Unauthorized: Only admin can update equipment');
+      throw new Error('Unauthorized');
+    }
     try {
-      const { error } = await supabase
-        .from('equipment_inventory')
-        .update(updates)
-        .eq('id', id);
-      
+      const { error } = await supabase.from('equipment_inventory').update(updates).eq('id', id);
       if (error) throw error;
-      
       toast.success('Equipment updated successfully!');
       await fetchEquipment();
     } catch (error) {
