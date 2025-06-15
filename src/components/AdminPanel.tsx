@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import Navbar from './Navbar';
+// Admin SubTabs
+import AdminPhotoGalleryTab from './admin/AdminPhotoGalleryTab';
+import AdminYouTubeTab from './admin/AdminYouTubeTab';
+import AdminNewsTab from './admin/AdminNewsTab';
+import AdminTimelineTab from './admin/AdminTimelineTab';
+import AdminProjectsTab from './admin/AdminProjectsTab';
+import AdminFeedbackTab from './admin/AdminFeedbackTab';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 
@@ -13,9 +21,8 @@ interface AdminPanelProps {
 }
 
 const AdminPanel = ({ onBack }: AdminPanelProps) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  
+  const [tab, setTab] = useState('popup');
+
   const {
     popup,
     updatePopup,
@@ -101,7 +108,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       photo_file: editingPresident.photo, // The File object
     });
     await fetchPresidentAndSecretary();
-    setEditingPresident((prev) => ({ ...prev, photo: null })); // Reset file after upload
   };
 
   const handleSecretaryUpdate = async () => {
@@ -114,7 +120,6 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       photo_file: editingSecretary.photo, // The File object
     });
     await fetchPresidentAndSecretary();
-    setEditingSecretary((prev) => ({ ...prev, photo: null })); // Reset file after upload
   };
 
   return (
@@ -138,17 +143,9 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
             </h2>
           </div>
           <div className="w-24 h-1 saffron-gradient mx-auto mb-6"></div>
-          {!onBack && (
-            <Button 
-              onClick={() => setIsLoggedIn(false)}
-              variant="outline"
-              className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
-            >
-              लॉगआउट
-            </Button>
-          )}
         </div>
 
+        {/* Tabs List */}
         <Tabs defaultValue="popup" className="w-full">
           <TabsList className="grid w-full grid-cols-8 mb-8">
             <TabsTrigger value="popup">पॉपअप</TabsTrigger>
@@ -243,6 +240,25 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="gallery">
+            <AdminPhotoGalleryTab />
+          </TabsContent>
+          <TabsContent value="youtube">
+            <AdminYouTubeTab />
+          </TabsContent>
+          <TabsContent value="news">
+            <AdminNewsTab />
+          </TabsContent>
+          <TabsContent value="timeline">
+            <AdminTimelineTab />
+          </TabsContent>
+          <TabsContent value="programs">
+            <AdminProjectsTab />
+          </TabsContent>
+          <TabsContent value="feedback">
+            <AdminFeedbackTab />
           </TabsContent>
 
           <TabsContent value="organization">
