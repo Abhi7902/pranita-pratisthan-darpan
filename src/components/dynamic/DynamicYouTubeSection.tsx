@@ -1,7 +1,29 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+// Helper to extract the actual video ID from various URL formats
+function extractYouTubeVideoId(urlOrId: string): string {
+  if (!urlOrId) return '';
+  // Handle plain video ID
+  if (/^[\w-]{11}$/.test(urlOrId)) return urlOrId;
+  // youtu.be style
+  let match = urlOrId.match(/youtu\.be\/([\w-]{11})/);
+  if (match) return match[1];
+  // youtube.com style
+  match = urlOrId.match(/[?&]v=([\w-]{11})/);
+  if (match) return match[1];
+  // Shorts
+  match = urlOrId.match(/shorts\/([\w-]{11})/);
+  if (match) return match[1];
+  // If "embed/" in URL
+  match = urlOrId.match(/embed\/([\w-]{11})/);
+  if (match) return match[1];
+  // If all fails, return whole string (maybe it's just almost correct)
+  return urlOrId;
+}
 
 interface Video {
   id: string;
@@ -26,13 +48,19 @@ const DynamicYouTubeSection = () => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        
-        // Add thumbnail URLs if not present
-        const videosWithThumbnails = (data || []).map(video => ({
-          ...video,
-          thumbnail_url: video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/maxresdefault.jpg`
-        }));
-        
+
+        // Always parse the correct video ID before use
+        const videosWithThumbnails = (data || []).map(video => {
+          const parsedVideoId = extractYouTubeVideoId(video.video_id ?? '');
+          return {
+            ...video,
+            parsedVideoId,
+            thumbnail_url:
+              video.thumbnail_url ||
+              `https://img.youtube.com/vi/${parsedVideoId}/maxresdefault.jpg`,
+          };
+        });
+
         setVideos(videosWithThumbnails);
       } catch (error) {
         console.error('Error fetching videos:', error);
@@ -90,11 +118,11 @@ const DynamicYouTubeSection = () => {
             <Card key={video.id} className="cultural-shadow hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-0">
                 <div className="relative">
-                  {selectedVideo === video.video_id ? (
+                  {selectedVideo === video.parsedVideoId ? (
                     <div className="aspect-video">
                       <iframe
-                        key={video.video_id} // force re-mount
-                        src={`https://www.youtube.com/embed/${video.video_id}?autoplay=1&rel=0`}
+                        key={video.parsedVideoId}
+                        src={`https://www.youtube.com/embed/${video.parsedVideoId}?autoplay=1&rel=0`}
                         title={video.title}
                         className="w-full h-full rounded-t-lg"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -104,7 +132,7 @@ const DynamicYouTubeSection = () => {
                   ) : (
                     <div 
                       className="relative cursor-pointer group"
-                      onClick={() => setSelectedVideo(video.video_id)}
+                      onClick={() => setSelectedVideo(video.parsedVideoId)}
                     >
                       <img
                         src={video.thumbnail_url}
