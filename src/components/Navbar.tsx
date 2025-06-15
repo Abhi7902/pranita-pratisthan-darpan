@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -106,14 +105,6 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
             >
               MEL
             </Button>
-
-            <Button 
-              onClick={() => onNavigate('admin')}
-              size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white text-sm px-4 py-2 rounded-lg"
-            >
-              Admin
-            </Button>
           </div>
 
           {/* Mobile menu button */}
@@ -176,17 +167,6 @@ const Navbar = ({ activeSection, onNavigate }: NavbarProps) => {
                   size="sm"
                 >
                   MEL
-                </Button>
-                
-                <Button 
-                  onClick={() => {
-                    onNavigate('admin');
-                    setIsOpen(false);
-                  }}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-sm"
-                  size="sm"
-                >
-                  Admin
                 </Button>
               </div>
             </div>
