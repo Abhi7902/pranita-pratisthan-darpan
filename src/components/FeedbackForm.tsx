@@ -31,13 +31,13 @@ const FeedbackForm = () => {
 
     setLoading(true);
     try {
-      // Insert to Supabase 'feedback' table directly
+      // Fix: Use 'contact_number' to match the column name in Supabase
       const { error } = await supabase
         .from('feedback')
         .insert({
           name: formData.name,
           email: formData.email,
-          contact_number: formData.contactNumber,
+          contact_number: formData.contactNumber, // fixed here
           rating: formData.rating || null,
           feedback: formData.feedback,
           suggestion: formData.suggestion,
