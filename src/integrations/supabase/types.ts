@@ -405,6 +405,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_news: boolean
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -414,6 +415,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_news?: boolean
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -423,6 +425,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_news?: boolean
           thumbnail_url?: string | null
           title?: string
           updated_at?: string

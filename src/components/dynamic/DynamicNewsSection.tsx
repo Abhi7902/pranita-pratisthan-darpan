@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, User } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import NewsArticleDialog from "./NewsArticleDialog";
+import { supabase } from '@/integrations/supabase/client';
 import { Youtube } from "lucide-react";
 
+// NewsItem type
 interface NewsItem {
   id: string;
   title: string;
@@ -15,7 +15,7 @@ interface NewsItem {
   created_at: string;
 }
 
-interface YoutubeVideoItem {
+interface YoutubeVideoNewsItem {
   id: string;
   title: string;
   video_id: string;
@@ -27,7 +27,9 @@ const DynamicNewsSection = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selected, setSelected] = useState<NewsItem | null>(null);
-  const [youtubeVideos, setYoutubeVideos] = useState<YoutubeVideoItem[]>([]);
+
+  // New: fetch only news-type YouTube videos (is_news = true)
+  const [ytNews, setYTNews] = useState<YoutubeVideoNewsItem[]>([]);
   const [ytLoading, setYTLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +39,6 @@ const DynamicNewsSection = () => {
           .from('news')
           .select('*')
           .order('created_at', { ascending: false });
-
         if (error) throw error;
         setNews(data || []);
       } catch (error) {
@@ -47,16 +48,16 @@ const DynamicNewsSection = () => {
       }
     };
 
-    const fetchYoutubeVideos = async () => {
+    const fetchYoutubeNewsVideos = async () => {
       setYTLoading(true);
       try {
         const { data, error } = await supabase
           .from('youtube_videos')
           .select('id, title, video_id, thumbnail_url')
+          .eq('is_news', true)
           .order('created_at', { ascending: false });
-
         if (error) throw error;
-        setYoutubeVideos(data ?? []);
+        setYTNews(data ?? []);
       } catch (error) {
         console.error('Error fetching YouTube news videos:', error);
       } finally {
@@ -65,7 +66,7 @@ const DynamicNewsSection = () => {
     };
 
     fetchNews();
-    fetchYoutubeVideos();
+    fetchYoutubeNewsVideos();
   }, []);
 
   if (loading) {
@@ -80,24 +81,7 @@ const DynamicNewsSection = () => {
     );
   }
 
-  if (news.length === 0) {
-    return (
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-4xl font-bold text-marathi-orange mb-4">
-              बातम्या व मीडिया
-            </h2>
-            <div className="w-24 h-1 saffron-gradient mx-auto mb-8"></div>
-            <p className="text-gray-600">अद्याप कोणत्याही बातम्या उपलब्ध नाहीत.</p>
-          </div>
-          {/* YouTube Section even if news is empty */}
-          <YouTubeNewsSection youtubeVideos={youtubeVideos} ytLoading={ytLoading} />
-        </div>
-      </section>
-    );
-  }
-
+  // Responsive 2-column: news left, yt news right
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,37 +94,47 @@ const DynamicNewsSection = () => {
             आमच्या संस्थेच्या नवीनतम बातम्या आणि कार्यक्रमांची माहिती
           </p>
         </div>
-
-        {/* News Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {news.map((item) => (
-            <button
-              className="text-left w-full focus:outline-none"
-              key={item.id}
-              onClick={() => {
-                setSelected(item);
-                setDialogOpen(true);
-              }}
-              aria-label={`${item.title} article`}
-            >
-              <div className="cultural-shadow hover:shadow-xl transition-shadow duration-300 rounded-lg bg-white">
-                <div className="p-6">
-                  <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
-                    {item.title}
-                  </h3>
-                  {item.summary && (
-                    <p className="text-gray-600 mb-2 line-clamp-3">
-                      {item.summary}
-                    </p>
-                  )}
-                </div>
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* News articles */}
+          <div className="flex-1">
+            {news.length === 0 ? (
+              <div className="text-center text-gray-500">
+                अद्याप कोणत्याही बातम्या उपलब्ध नाहीत.
               </div>
-            </button>
-          ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {news.map((item) => (
+                  <button
+                    className="text-left w-full focus:outline-none"
+                    key={item.id}
+                    onClick={() => {
+                      setSelected(item);
+                      setDialogOpen(true);
+                    }}
+                    aria-label={`${item.title} article`}
+                  >
+                    <div className="cultural-shadow hover:shadow-xl transition-shadow duration-300 rounded-lg bg-white">
+                      <div className="p-6">
+                        <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+                          {item.title}
+                        </h3>
+                        {item.summary && (
+                          <p className="text-gray-600 mb-2 line-clamp-3">
+                            {item.summary}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* YouTube news video panel */}
+          <div className="lg:w-[360px] w-full">
+            <YouTubeNewsPanel youtubeVideos={ytNews} ytLoading={ytLoading} />
+          </div>
         </div>
-
-        {/* YouTube News Section */}
-        <YouTubeNewsSection youtubeVideos={youtubeVideos} ytLoading={ytLoading} />
       </div>
       <NewsArticleDialog
         open={dialogOpen}
@@ -164,63 +158,61 @@ const DynamicNewsSection = () => {
   );
 };
 
-// Separate Component for YouTube News Section (keep file small)
-function YouTubeNewsSection({
+// Right panel: YouTube news videos (is_news only)
+function YouTubeNewsPanel({
   youtubeVideos,
   ytLoading,
 }: {
-  youtubeVideos: YoutubeVideoItem[];
+  youtubeVideos: YoutubeVideoNewsItem[];
   ytLoading: boolean;
 }) {
   if (ytLoading) {
     return (
-      <div className="mt-12 text-center text-gray-500">
-        YouTube News Videos लोड होत आहेत...
+      <div className="bg-white border p-6 rounded-lg shadow mb-4 flex items-center gap-2">
+        <Youtube className="w-6 h-6 text-red-500 animate-bounce" />
+        <span>News YouTube व्हिडिओ लोड होत आहेत...</span>
+      </div>
+    );
+  }
+  if (!youtubeVideos || youtubeVideos.length === 0) {
+    return (
+      <div className="bg-white border p-6 rounded-lg shadow text-gray-400 text-center">
+        <Youtube className="w-7 h-7 inline-block text-red-400 mb-2" />
+        <div>Currently no YouTube news videos</div>
       </div>
     );
   }
 
-  if (youtubeVideos.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="mt-12">
-      <div className="text-lg font-bold text-marathi-orange mb-4 flex items-center gap-2">
-        <Youtube className="w-6 h-6 text-red-500" />
-        YouTube News
+    <div className="bg-white border p-6 rounded-lg shadow">
+      <div className="flex items-center mb-3 gap-2">
+        <Youtube className="w-5 h-5 text-red-500" />
+        <span className="font-bold text-marathi-orange">YouTube News Videos</span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-2">
         {youtubeVideos.map((yt) => (
           <a
             key={yt.id}
             href={`https://www.youtube.com/watch?v=${yt.video_id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="block group w-full"
+            className="hover:bg-red-50 transition-colors rounded-md px-2 py-2 flex items-center gap-2 text-gray-800 group"
           >
-            <div className="rounded-lg overflow-hidden bg-white shadow cultural-shadow hover:shadow-xl transition-shadow duration-300">
-              {yt.thumbnail_url ? (
-                <img
-                  src={yt.thumbnail_url}
-                  alt={yt.title}
-                  className="w-full aspect-video object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full aspect-video flex items-center justify-center bg-gray-200">
-                  <Youtube className="w-8 h-8 text-gray-400" />
-                </div>
-              )}
-              <div className="p-4">
-                <div className="font-semibold text-gray-900 text-lg line-clamp-2 group-hover:text-red-700">
-                  {yt.title}
-                </div>
-                <div className="mt-2 text-blue-600 text-sm flex items-center gap-1 group-hover:underline">
-                  <Youtube className="w-4 h-4" /> Watch on YouTube
-                </div>
+            {yt.thumbnail_url ? (
+              <img
+                src={yt.thumbnail_url}
+                alt={yt.title}
+                className="w-10 h-7 object-cover rounded-sm border"
+              />
+            ) : (
+              <div className="w-10 h-7 bg-gray-200 flex items-center justify-center rounded-sm">
+                <Youtube className="w-4 h-4 text-gray-400" />
               </div>
-            </div>
+            )}
+            <span className="line-clamp-2 flex-1 group-hover:text-red-700 text-sm font-medium">
+              {yt.title}
+            </span>
+            <Youtube className="w-4 h-4 text-red-400 opacity-80 group-hover:scale-110" />
           </a>
         ))}
       </div>
@@ -229,3 +221,4 @@ function YouTubeNewsSection({
 }
 
 export default DynamicNewsSection;
+
