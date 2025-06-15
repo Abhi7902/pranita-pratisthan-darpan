@@ -98,8 +98,10 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       role: 'president',
       message: editingPresident.message,
       photo_url: editingPresident.photo_url,
+      photo_file: editingPresident.photo, // The File object
     });
     await fetchPresidentAndSecretary();
+    setEditingPresident((prev) => ({ ...prev, photo: null })); // Reset file after upload
   };
 
   const handleSecretaryUpdate = async () => {
@@ -109,8 +111,10 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
       role: 'secretary',
       message: editingSecretary.message,
       photo_url: editingSecretary.photo_url,
+      photo_file: editingSecretary.photo, // The File object
     });
     await fetchPresidentAndSecretary();
+    setEditingSecretary((prev) => ({ ...prev, photo: null })); // Reset file after upload
   };
 
   return (

@@ -75,7 +75,7 @@ interface SupabaseMELContextType {
   setCurrentMELUser: (user: MELUser | null) => void;
   refreshData: () => Promise<void>;
   updatePresidentSecretary: (
-    updates: Omit<PresidentSecretary, 'id'> & { id?: string }
+    updates: Omit<PresidentSecretary, 'id'> & { id?: string; photo_file?: File | null }
   ) => Promise<void>;
   fetchPresidentAndSecretary: () => Promise<void>;
 }
@@ -273,6 +273,94 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   };
 
+  const uploadPresidentSecretaryPhoto = async (file: File, role: string, oldPhotoPath?: string | null) => {
+    // Upload to Supabase storage
+    const ext = file.name.split('.').pop();
+    const filename = `${role}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const bucket = 'president_secretary';
+    const photoPath = `photos/${filename}`;
+
+    // Delete old if present
+    if (oldPhotoPath) {
+      await supabase.storage.from(bucket).remove([oldPhotoPath]);
+    }
+
+    const uploadRes = await supabase.storage
+      .from(bucket)
+      .upload(photoPath, file, { upsert: true });
+    if (uploadRes.error) throw uploadRes.error;
+
+    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(photoPath);
+    return { photo_url: publicUrl, photo_path: photoPath };
+  };
+
+  const updatePresidentSecretary = async (
+    updates: Omit<PresidentSecretary, 'id'> & { id?: string; photo_file?: File | null }
+  ) => {
+    try {
+      if (!['president', 'secretary'].includes(updates.role)) throw new Error('Invalid role');
+
+      // Find the existing record for that role if present
+      const { data: existingArr, error: selError } = await supabase
+        .from('president_secretary')
+        .select('*')
+        .eq('role', updates.role)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      if (selError) throw selError;
+
+      let newPhotoUrl = updates.photo_url ?? null;
+      let newPhotoPath = null;
+      if (updates.photo_file) {
+        // Get old photo path if any
+        const oldPhotoPath =
+          existingArr && existingArr.length > 0 && existingArr[0].photo_path
+            ? existingArr[0].photo_path
+            : undefined;
+        // Upload and get new url/path
+        const uploaded = await uploadPresidentSecretaryPhoto(
+          updates.photo_file,
+          updates.role,
+          oldPhotoPath
+        );
+        newPhotoUrl = uploaded.photo_url;
+        newPhotoPath = uploaded.photo_path;
+      } else if (existingArr && existingArr.length > 0) {
+        newPhotoPath = existingArr[0].photo_path ?? null;
+      }
+
+      const payload: any = {
+        name: updates.name,
+        message: updates.message,
+        photo_url: newPhotoUrl,
+        photo_path: newPhotoPath,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingArr && existingArr.length > 0) {
+        const id = existingArr[0].id;
+        const { error } = await supabase
+          .from('president_secretary')
+          .update(payload)
+          .eq('id', id);
+        if (error) throw error;
+        toast.success(`Updated ${updates.role}`);
+      } else {
+        payload.role = updates.role;
+        const { error } = await supabase
+          .from('president_secretary')
+          .insert([payload]);
+        if (error) throw error;
+        toast.success(`Added ${updates.role}`);
+      }
+      await fetchPresidentAndSecretary();
+    } catch (error) {
+      console.error('Error updating president/secretary:', error);
+      toast.error('Failed to update president/secretary');
+      throw error;
+    }
+  };
+
   useEffect(() => {
     refreshData();
   }, [user, isMELUser]);
@@ -390,61 +478,6 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updatePresidentSecretary = async (
-    updates: Omit<PresidentSecretary, 'id'> & { id?: string }
-  ) => {
-    try {
-      // Only allow update/insert for 'president' or 'secretary'
-      if (!['president', 'secretary'].includes(updates.role)) throw new Error('Invalid role');
-      // Find the existing record for that role if present
-      const { data: existingArr, error: selError } = await supabase
-        .from('president_secretary')
-        .select('*')
-        .eq('role', updates.role)
-        .order('updated_at', { ascending: false })
-        .limit(1);
-
-      if (selError) throw selError;
-
-      if (existingArr && existingArr.length > 0) {
-        // update existing entry
-        const id = existingArr[0].id;
-        const { error } = await supabase
-          .from('president_secretary')
-          .update({
-            name: updates.name,
-            message: updates.message,
-            photo_url: updates.photo_url,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', id);
-
-        if (error) throw error;
-        toast.success(`Updated ${updates.role}`);
-      } else {
-        // Insert new entry
-        const { error } = await supabase
-          .from('president_secretary')
-          .insert([
-            {
-              name: updates.name,
-              role: updates.role,
-              message: updates.message,
-              photo_url: updates.photo_url,
-              updated_at: new Date().toISOString(),
-            },
-          ]);
-        if (error) throw error;
-        toast.success(`Added ${updates.role}`);
-      }
-      await fetchPresidentAndSecretary();
-    } catch (error) {
-      console.error('Error updating president/secretary:', error);
-      toast.error('Failed to update president/secretary');
-      throw error;
-    }
-  };
-
   const value = {
     equipment,
     melUsers,
@@ -475,3 +508,5 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     </SupabaseMELContext.Provider>
   );
 };
+
+export default SupabaseMELProvider;
