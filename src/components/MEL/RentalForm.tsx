@@ -6,68 +6,67 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { useMELContext } from '@/contexts/MELContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const RentalForm = () => {
-  const { equipment, addRental, currentMELUser } = useMELContext();
+  const { equipment, addRental } = useSupabaseMEL();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     patientName: '',
-    address: '',
     mobileNumber: '',
-    aadharNumber: '',
     equipmentId: '',
     pickupDate: new Date().toISOString().split('T')[0]
   });
 
   const selectedEquipment = equipment.find(eq => eq.id === formData.equipmentId);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedEquipment || selectedEquipment.availableQuantity === 0) {
+    if (!selectedEquipment || selectedEquipment.available_quantity === 0) {
       toast.error('Selected equipment is not available');
       return;
     }
 
-    if (!currentMELUser) {
+    if (!user) {
       toast.error('User not logged in');
       return;
     }
 
     const pickupDate = new Date(formData.pickupDate);
     const returnDate = new Date(pickupDate);
-    returnDate.setDate(returnDate.getDate() + selectedEquipment.rentalDuration);
+    returnDate.setDate(returnDate.getDate() + selectedEquipment.rental_duration);
 
     const rental = {
-      id: Date.now().toString(),
-      patientName: formData.patientName,
-      address: formData.address,
-      mobileNumber: formData.mobileNumber,
-      aadharNumber: formData.aadharNumber,
-      equipmentId: formData.equipmentId,
-      equipmentName: selectedEquipment.name,
-      depositAmount: selectedEquipment.depositAmount,
-      pickupDate: formData.pickupDate,
-      returnDate: returnDate.toISOString().split('T')[0],
-      status: 'active' as const,
-      userId: currentMELUser.id
+      patient_name: formData.patientName,
+      mobile_number: formData.mobileNumber,
+      equipment_id: formData.equipmentId,
+      equipment_name: selectedEquipment.name,
+      pickup_date: formData.pickupDate,
+      return_date: returnDate.toISOString().split('T')[0],
+      status: 'rented',
+      created_by_user_id: user.id
     };
 
-    addRental(rental);
-    toast.success('Rental created successfully!');
-    
-    // Reset form
-    setFormData({
-      patientName: '',
-      address: '',
-      mobileNumber: '',
-      aadharNumber: '',
-      equipmentId: '',
-      pickupDate: new Date().toISOString().split('T')[0]
-    });
+    try {
+      await addRental(rental);
+      toast.success('Rental created successfully!');
+      
+      // Reset form
+      setFormData({
+        patientName: '',
+        mobileNumber: '',
+        equipmentId: '',
+        pickupDate: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      console.error('Error creating rental:', error);
+      toast.error('Failed to create rental');
+    }
   };
 
-  const availableEquipment = equipment.filter(eq => eq.availableQuantity > 0);
+  const availableEquipment = equipment.filter(eq => eq.available_quantity > 0);
 
   return (
     <Card>
@@ -103,19 +102,6 @@ const RentalForm = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Aadhar Number *
-              </label>
-              <Input
-                value={formData.aadharNumber}
-                onChange={(e) => setFormData({...formData, aadharNumber: e.target.value})}
-                pattern="[0-9]{12}"
-                title="Please enter a valid 12-digit Aadhar number"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Equipment *
               </label>
               <Select 
@@ -128,7 +114,7 @@ const RentalForm = () => {
                 <SelectContent>
                   {availableEquipment.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.name} (Available: {item.availableQuantity})
+                      {item.name} (Available: {item.available_quantity})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -148,27 +134,15 @@ const RentalForm = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address *
-            </label>
-            <Textarea
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              rows={3}
-              required
-            />
-          </div>
-
           {selectedEquipment && (
             <div className="bg-blue-50 p-4 rounded-lg">
               <h4 className="font-medium text-blue-900 mb-2">Rental Details:</h4>
               <div className="text-sm text-blue-800 space-y-1">
                 <p>Equipment: {selectedEquipment.name}</p>
-                <p>Rental Duration: {selectedEquipment.rentalDuration} days</p>
-                <p>Deposit Amount: ₹{selectedEquipment.depositAmount}</p>
+                <p>Rental Duration: {selectedEquipment.rental_duration} days</p>
+                <p>Deposit Amount: ₹{selectedEquipment.deposit_amount}</p>
                 {formData.pickupDate && (
-                  <p>Return Date: {new Date(new Date(formData.pickupDate).getTime() + selectedEquipment.rentalDuration * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
+                  <p>Return Date: {new Date(new Date(formData.pickupDate).getTime() + selectedEquipment.rental_duration * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
                 )}
               </div>
             </div>

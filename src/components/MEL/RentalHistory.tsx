@@ -1,23 +1,26 @@
 
-import { useMELContext } from '@/contexts/MELContext';
+import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const RentalHistory = () => {
-  const { rentals, markEquipmentReturned, currentMELUser } = useMELContext();
+  const { rentals, updateRental } = useSupabaseMEL();
 
-  const userRentals = rentals.filter(rental => rental.userId === currentMELUser?.id);
-
-  const handleMarkReturned = (rentalId: string) => {
-    markEquipmentReturned(rentalId);
-    toast.success('Equipment marked as returned successfully!');
+  const handleMarkReturned = async (rentalId: string) => {
+    try {
+      await updateRental(rentalId, { status: 'returned' });
+      toast.success('Equipment marked as returned successfully!');
+    } catch (error) {
+      console.error('Error marking equipment as returned:', error);
+      toast.error('Failed to mark equipment as returned');
+    }
   };
 
   const getStatusBadge = (rental: any) => {
     const currentDate = new Date();
-    const returnDate = new Date(rental.returnDate);
+    const returnDate = new Date(rental.return_date);
     
     if (rental.status === 'returned') {
       return <Badge variant="secondary">Returned</Badge>;
@@ -28,7 +31,9 @@ const RentalHistory = () => {
     }
   };
 
-  const getDaysRemaining = (returnDate: string) => {
+  const getDaysRemaining = (returnDate: string, status: string) => {
+    if (status === 'returned') return 'Returned';
+    
     const currentDate = new Date();
     const targetDate = new Date(returnDate);
     const diffTime = targetDate.getTime() - currentDate.getTime();
@@ -46,69 +51,50 @@ const RentalHistory = () => {
   return (
     <div className="space-y-6">
       <div className="grid gap-6">
-        {userRentals.length === 0 ? (
+        {rentals.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-gray-500">No rental history found.</p>
             </CardContent>
           </Card>
         ) : (
-          userRentals.map((rental) => (
+          rentals.map((rental) => (
             <Card key={rental.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg">{rental.equipmentName}</CardTitle>
+                <CardTitle className="text-lg">{rental.equipment_name}</CardTitle>
                 {getStatusBadge(rental)}
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="font-medium text-gray-700">Patient:</p>
-                    <p>{rental.patientName}</p>
+                    <p>{rental.patient_name}</p>
                   </div>
                   
                   <div>
                     <p className="font-medium text-gray-700">Mobile:</p>
-                    <p>{rental.mobileNumber}</p>
+                    <p>{rental.mobile_number}</p>
                   </div>
                   
                   <div>
                     <p className="font-medium text-gray-700">Pickup Date:</p>
-                    <p>{new Date(rental.pickupDate).toLocaleDateString()}</p>
+                    <p>{new Date(rental.pickup_date).toLocaleDateString()}</p>
                   </div>
                   
                   <div>
                     <p className="font-medium text-gray-700">Return Date:</p>
-                    <p>{new Date(rental.returnDate).toLocaleDateString()}</p>
+                    <p>{new Date(rental.return_date).toLocaleDateString()}</p>
                   </div>
                   
                   <div>
-                    <p className="font-medium text-gray-700">Deposit:</p>
-                    <p>₹{rental.depositAmount}</p>
+                    <p className="font-medium text-gray-700">Status:</p>
+                    <p className={rental.status === 'returned' ? 'text-green-600' : new Date() > new Date(rental.return_date) ? 'text-red-600 font-medium' : 'text-blue-600'}>
+                      {getDaysRemaining(rental.return_date, rental.status)}
+                    </p>
                   </div>
-                  
-                  {rental.status === 'active' && (
-                    <div>
-                      <p className="font-medium text-gray-700">Status:</p>
-                      <p className={new Date() > new Date(rental.returnDate) ? 'text-red-600 font-medium' : 'text-green-600'}>
-                        {getDaysRemaining(rental.returnDate)}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {rental.actualReturnDate && (
-                    <div>
-                      <p className="font-medium text-gray-700">Returned On:</p>
-                      <p>{new Date(rental.actualReturnDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
                 </div>
                 
-                <div className="mt-4">
-                  <p className="font-medium text-gray-700 mb-1">Address:</p>
-                  <p className="text-sm">{rental.address}</p>
-                </div>
-                
-                {rental.status === 'active' && (
+                {rental.status === 'rented' && (
                   <div className="mt-4">
                     <Button 
                       onClick={() => handleMarkReturned(rental.id)}
