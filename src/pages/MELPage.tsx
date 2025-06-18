@@ -8,7 +8,7 @@ import SupabaseMELAdminPanel from '@/components/MEL/SupabaseMELAdminPanel';
 import Navbar from '@/components/Navbar';
 
 const MELPage = () => {
-  const { user, isAdmin, isMELUser } = useAuth();
+  const { user, isAdmin, isMELUser, loading } = useAuth();
   const { currentMELUser } = useSupabaseMEL();
   const [isAdminView, setIsAdminView] = useState(false);
 
@@ -17,6 +17,18 @@ const MELPage = () => {
     // MEL page navigation is handled differently
     console.log('Navigation to:', section);
   };
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div>
+        <Navbar activeSection="mel" onNavigate={handleNavigate} />
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If not logged in, show login
   if (!user) {
@@ -49,7 +61,7 @@ const MELPage = () => {
   }
 
   // If MEL user, show dashboard
-  if (isMELUser && currentMELUser) {
+  if (isMELUser) {
     return (
       <div>
         <Navbar activeSection="mel" onNavigate={handleNavigate} />
@@ -58,7 +70,7 @@ const MELPage = () => {
     );
   }
 
-  // If logged in but not authorized
+  // If logged in but not authorized for MEL
   return (
     <div>
       <Navbar activeSection="mel" onNavigate={handleNavigate} />
@@ -66,6 +78,7 @@ const MELPage = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
           <p className="text-gray-600">You don't have permission to access the MEL system.</p>
+          <p className="text-sm text-gray-500 mt-2">Contact administrator for MEL access.</p>
         </div>
       </div>
     </div>

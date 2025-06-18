@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,17 @@ const LoginPage = () => {
     } else {
       toast.success('Login successful!');
       
-      // Redirect based on user role
+      console.log('Login result:', result);
+      
+      // Redirect based on user role with priority: Admin > MEL User > Home
       if (result.isAdmin) {
+        console.log('Redirecting admin to /admin');
         navigate('/admin');
       } else if (result.isMELUser) {
+        console.log('Redirecting MEL user to /mel');
         navigate('/mel');
       } else {
+        console.log('No specific role, redirecting to home');
         navigate('/');
       }
     }

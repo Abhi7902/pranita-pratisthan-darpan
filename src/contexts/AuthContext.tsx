@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkUserRoles = async (userId: string) => {
     try {
-      console.log('Checking admin status for user:', userId);
+      console.log('Checking roles for user:', userId);
       
       // Check if user is admin
       const { data: adminData, error: adminError } = await supabase
@@ -44,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('Admin query result:', adminData, adminError);
       
+      // Check if user is MEL user
       const { data: melData, error: melError } = await supabase
         .from('mel_users')
         .select('*')
@@ -78,16 +80,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if user is admin or MEL user
+          // Check roles after a short delay to ensure database is ready
           setTimeout(async () => {
             await checkUserRoles(session.user.id);
-          }, 0);
+            setLoading(false);
+          }, 100);
         } else {
           setIsAdmin(false);
           setIsMELUser(false);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -96,13 +98,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      
+      if (session?.user) {
+        setTimeout(async () => {
+          await checkUserRoles(session.user.id);
+          setLoading(false);
+        }, 100);
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -111,9 +122,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!error && data.user) {
       // Check user roles immediately after login
       const roles = await checkUserRoles(data.user.id);
+      setLoading(false);
       return { error, ...roles };
     }
     
+    setLoading(false);
     return { error };
   };
 
@@ -132,33 +145,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const createMELUser = async (userData: { email: string; password: string; fullName: string; username: string }) => {
     if (!isAdmin) {
-      return { error: { message: 'Unauthorized' } };
+      return { error: { message: 'Unauthorized: Only admins can create MEL users' } };
     }
 
-    // Create Supabase Auth user, force email to be confirmed ("email_confirm": true)
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: userData.email,
-      password: userData.password,
-      email_confirm: true,
-    });
-
-    if (authError) {
-      return { error: authError };
-    }
-
-    // Add MEL user DB record
-    const { error: melError } = await supabase
-      .from('mel_users')
-      .insert({
-        user_id: authData.user.id,
-        username: userData.username,
-        full_name: userData.fullName,
-        email: userData.email
+    try {
+      // Call the edge function to create user with admin privileges
+      const { data, error } = await supabase.functions.invoke('create-mel-user', {
+        body: {
+          email: userData.email,
+          password: userData.password,
+          fullName: userData.fullName,
+          username: userData.username
+        }
       });
 
-    // TODO: Optionally send mail (with info) to admin or user here via an edge function.
+      if (error) {
+        console.error('Edge function error:', error);
+        return { error };
+      }
 
-    return { error: melError };
+      return { error: null };
+    } catch (error) {
+      console.error('Error creating MEL user:', error);
+      return { error: { message: 'Failed to create MEL user' } };
+    }
   };
 
   const value = {

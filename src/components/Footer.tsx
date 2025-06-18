@@ -1,13 +1,20 @@
 
 import { MapPin, Phone, Mail, Facebook, Youtube, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   const scrollToSection = (sectionId: string) => {
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       window.location.hash = sectionId;
     }
+  };
+
+  const handlePageNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
@@ -66,9 +73,20 @@ const Footer = () => {
                 </li>
               ))}
               <li>
-                <a href="#" className="text-gray-300 hover:text-orange-400 transition-colors text-cultural">
+                <button 
+                  onClick={() => handlePageNavigation('/privacy-policy')}
+                  className="text-gray-300 hover:text-orange-400 transition-colors text-cultural"
+                >
+                  गोपनीयता धोरण
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handlePageNavigation('/terms-conditions')}
+                  className="text-gray-300 hover:text-orange-400 transition-colors text-cultural"
+                >
                   नियम व अटी
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -113,12 +131,18 @@ const Footer = () => {
               </span>
             </div>
             <div className="flex space-x-6 text-sm">
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors text-cultural">
+              <button 
+                onClick={() => handlePageNavigation('/privacy-policy')}
+                className="text-gray-400 hover:text-orange-400 transition-colors text-cultural"
+              >
                 गोपनीयता धोरण
-              </a>
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors text-cultural">
+              </button>
+              <button 
+                onClick={() => handlePageNavigation('/terms-conditions')}
+                className="text-gray-400 hover:text-orange-400 transition-colors text-cultural"
+              >
                 नियम व अटी
-              </a>
+              </button>
             </div>
           </div>
         </div>
