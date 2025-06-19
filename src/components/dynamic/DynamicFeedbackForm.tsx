@@ -11,7 +11,7 @@ const DynamicFeedbackForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    contactNumber: '',
+    contact_number: '',
     feedback: '',
     suggestion: '',
     rating: 5
@@ -33,7 +33,7 @@ const DynamicFeedbackForm = () => {
       setFormData({
         name: '',
         email: '',
-        contactNumber: '',
+        contact_number: '',
         feedback: '',
         suggestion: '',
         rating: 5
@@ -97,13 +97,13 @@ const DynamicFeedbackForm = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="contact_number" className="block text-sm font-medium text-gray-700 mb-2">
                     संपर्क क्रमांक
                   </label>
                   <Input
                     id="contactNumber"
                     name="contactNumber"
-                    value={formData.contactNumber}
+                    value={formData.contact_number}
                     onChange={handleInputChange}
                     placeholder="आपला मोबाइल नंबर"
                     className="border-marathi-orange/30 focus:border-marathi-orange"
