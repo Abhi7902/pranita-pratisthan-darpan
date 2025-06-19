@@ -60,12 +60,15 @@ const MELPage = () => {
     );
   }
 
-  // If MEL user, show dashboard
+  // If MEL user, show dashboard with proper props
   if (isMELUser) {
     return (
       <div>
         <Navbar activeSection="mel" onNavigate={handleNavigate} />
-        <MELDashboard onAdminAccess={() => setIsAdminView(true)} />
+        <MELDashboard 
+          onRentEquipment={() => console.log('Navigate to rent equipment')} 
+          onViewHistory={() => console.log('Navigate to rental history')} 
+        />
       </div>
     );
   }

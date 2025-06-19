@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ interface MELDashboardProps {
 }
 
 const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => {
-  const { logout, user } = useAuth();
+  const { signOut, user } = useAuth();
   const { equipment, rentals, getOverdueRentals, currentMELUser } = useSupabaseMEL();
   const [userName, setUserName] = useState('');
 
@@ -111,7 +110,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
                 Download Feedback
               </Button>
               <Button 
-                onClick={logout}
+                onClick={signOut}
                 variant="outline" 
                 size="sm"
                 className="text-red-600 hover:bg-red-50 hover:text-red-700"
