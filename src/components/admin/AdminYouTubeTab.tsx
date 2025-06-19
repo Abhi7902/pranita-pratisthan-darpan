@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -13,6 +15,7 @@ interface YouTubeVideo {
   video_id: string;
   thumbnail_url: string;
   description: string;
+  is_news: boolean;
 }
 
 const AdminYouTubeTab = () => {
@@ -20,6 +23,7 @@ const AdminYouTubeTab = () => {
   const [title, setTitle] = useState('');
   const [videoId, setVideoId] = useState('');
   const [desc, setDesc] = useState('');
+  const [videoType, setVideoType] = useState('normal');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -57,12 +61,13 @@ const AdminYouTubeTab = () => {
         video_id: videoId,
         description: desc,
         thumbnail_url: thumbUrl,
-        is_news: false
+        is_news: videoType === 'news'
       });
       if (error) throw error;
       setTitle('');
       setVideoId('');
       setDesc('');
+      setVideoType('normal');
       setThumbnail(null);
       toast.success('Video added');
       fetchVideos();
@@ -99,8 +104,24 @@ const AdminYouTubeTab = () => {
             onChange={e => setThumbnail(e.target.files?.[0] || null)}
             />
         </div>
-        <Button onClick={handleAdd} disabled={uploading}>Add Video</Button>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        
+        <div className="mb-4">
+          <Label className="text-sm font-medium mb-2 block">Video Type</Label>
+          <RadioGroup value={videoType} onValueChange={setVideoType} className="flex gap-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="normal" id="normal" />
+              <Label htmlFor="normal">Normal YouTube Video</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="news" id="news" />
+              <Label htmlFor="news">News Video</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <Button onClick={handleAdd} disabled={uploading} className="mb-8">Add Video</Button>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {videos.map(vid => (
             <div key={vid.id} className="border rounded p-3">
               {vid.thumbnail_url &&
@@ -108,6 +129,11 @@ const AdminYouTubeTab = () => {
               <div className="font-bold">{vid.title}</div>
               <div className="text-xs text-gray-700">{vid.video_id}</div>
               <div className="text-xs text-gray-500 mb-2">{vid.description}</div>
+              <div className="text-xs font-medium mb-2">
+                Type: <span className={vid.is_news ? 'text-red-600' : 'text-blue-600'}>
+                  {vid.is_news ? 'News Video' : 'Normal Video'}
+                </span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"

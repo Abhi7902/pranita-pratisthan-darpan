@@ -3,90 +3,111 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { Settings } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const PasswordChangeModal = () => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+interface PasswordChangeModalProps {
+  trigger?: React.ReactNode;
+}
+
+const PasswordChangeModal = ({ trigger }: PasswordChangeModalProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [passwords, setPasswords] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const { updatePassword } = useAuth();
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+    if (passwords.new !== passwords.confirm) {
+      toast.error('New passwords do not match');
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (passwords.new.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
-    const { error } = await updatePassword(newPassword);
-    
-    if (error) {
-      toast.error('Password update failed: ' + error.message);
-    } else {
-      toast.success('Password updated successfully!');
-      setNewPassword('');
-      setConfirmPassword('');
-      setOpen(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwords.new
+      });
+
+      if (error) throw error;
+
+      toast.success('Password updated successfully');
+      setPasswords({ current: '', new: '', confirm: '' });
+      setIsOpen(false);
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      toast.error(error.message || 'Failed to update password');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          Change Password
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm">
+            <KeyRound className="h-4 w-4 mr-2" />
+            Change Password
+          </Button>
+        )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handlePasswordChange} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
-            </label>
+            <Label htmlFor="current">Current Password</Label>
             <Input
+              id="current"
               type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
+              value={passwords.current}
+              onChange={(e) => setPasswords(prev => ({ ...prev, current: e.target.value }))}
               required
             />
           </div>
-          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
-            </label>
+            <Label htmlFor="new">New Password</Label>
             <Input
+              id="new"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
+              value={passwords.new}
+              onChange={(e) => setPasswords(prev => ({ ...prev, new: e.target.value }))}
               required
+              minLength={6}
             />
           </div>
-
-          <Button 
-            type="submit" 
-            className="w-full bg-marathi-orange hover:bg-marathi-deepOrange"
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update Password'}
-          </Button>
+          <div>
+            <Label htmlFor="confirm">Confirm New Password</Label>
+            <Input
+              id="confirm"
+              type="password"
+              value={passwords.confirm}
+              onChange={(e) => setPasswords(prev => ({ ...prev, confirm: e.target.value }))}
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Password'}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

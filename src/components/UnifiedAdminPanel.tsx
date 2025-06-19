@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
@@ -7,7 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import AdminPanel from './AdminPanel';
 import SupabaseMELAdminPanel from './MEL/SupabaseMELAdminPanel';
 import Navbar from './Navbar';
+import PasswordChangeModal from './auth/PasswordChangeModal';
 import { useState } from 'react';
+import { downloadCSV } from '@/utils/csvExport';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Download } from 'lucide-react';
 
 const UnifiedAdminPanel = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -26,6 +32,32 @@ const UnifiedAdminPanel = () => {
       navigate('/');
     } else {
       console.log('Navigation to:', section);
+    }
+  };
+
+  const downloadFeedback = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      const feedbackData = data.map(feedback => ({
+        Name: feedback.name,
+        Email: feedback.email || '',
+        'Contact Number': feedback.contact_number || '',
+        Rating: feedback.rating || '',
+        Feedback: feedback.feedback,
+        Suggestion: feedback.suggestion || '',
+        Date: new Date(feedback.created_at).toLocaleDateString()
+      }));
+      
+      downloadCSV(feedbackData, 'Feedback_Data');
+    } catch (error) {
+      console.error('Error downloading feedback:', error);
+      toast.error('Failed to download feedback data');
     }
   };
 
@@ -134,13 +166,20 @@ const UnifiedAdminPanel = () => {
             </h2>
             <div className="w-24 h-1 saffron-gradient mx-auto mb-6"></div>
             <p className="text-sm text-gray-600 mb-4">Administrator Panel - Full System Access</p>
-            <Button 
-              onClick={signOut}
-              variant="outline"
-              className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
-            >
-              लॉगआउट
-            </Button>
+            <div className="flex justify-center gap-2">
+              <PasswordChangeModal />
+              <Button onClick={downloadFeedback} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download Feedback
+              </Button>
+              <Button 
+                onClick={signOut}
+                variant="outline"
+                className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
+              >
+                लॉगआउट
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">

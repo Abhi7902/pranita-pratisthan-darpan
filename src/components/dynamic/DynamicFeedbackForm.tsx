@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +26,14 @@ const DynamicFeedbackForm = () => {
     try {
       const { error } = await supabase
         .from('feedback')
-        .insert([formData]);
+        .insert([{
+          name: formData.name,
+          email: formData.email,
+          contact_number: formData.contact_number,
+          feedback: formData.feedback,
+          suggestion: formData.suggestion,
+          rating: formData.rating
+        }]);
 
       if (error) throw error;
 
@@ -101,8 +109,8 @@ const DynamicFeedbackForm = () => {
                     संपर्क क्रमांक
                   </label>
                   <Input
-                    id="contactNumber"
-                    name="contactNumber"
+                    id="contact_number"
+                    name="contact_number"
                     value={formData.contact_number}
                     onChange={handleInputChange}
                     placeholder="आपला मोबाइल नंबर"

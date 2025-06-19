@@ -1,15 +1,16 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Edit, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { downloadCSV } from '@/utils/csvExport';
+import PasswordChangeModal from '@/components/auth/PasswordChangeModal';
 
 interface SupabaseMELAdminPanelProps {
   onBackToUser: () => void;
@@ -125,6 +126,44 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
     }
   };
 
+  const downloadRentalHistory = () => {
+    const rentalData = rentals.map(rental => ({
+      Equipment: rental.equipment_name,
+      Patient: rental.patient_name,
+      Mobile: rental.mobile_number,
+      'Pickup Date': new Date(rental.pickup_date).toLocaleDateString(),
+      'Return Date': new Date(rental.return_date).toLocaleDateString(),
+      Status: rental.status
+    }));
+    downloadCSV(rentalData, 'MEL_Rental_History');
+  };
+
+  const downloadFeedback = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      const feedbackData = data.map(feedback => ({
+        Name: feedback.name,
+        Email: feedback.email || '',
+        'Contact Number': feedback.contact_number || '',
+        Rating: feedback.rating || '',
+        Feedback: feedback.feedback,
+        Suggestion: feedback.suggestion || '',
+        Date: new Date(feedback.created_at).toLocaleDateString()
+      }));
+      
+      downloadCSV(feedbackData, 'Feedback_Data');
+    } catch (error) {
+      console.error('Error downloading feedback:', error);
+      toast.error('Failed to download feedback data');
+    }
+  };
+
   const overdueRentals = getOverdueRentals();
 
   if (loading) {
@@ -158,6 +197,17 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
                   Medical Equipment Library Administration
                 </p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <PasswordChangeModal />
+              <Button onClick={downloadRentalHistory} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download Rentals
+              </Button>
+              <Button onClick={downloadFeedback} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download Feedback
+              </Button>
             </div>
           </div>
         </div>
