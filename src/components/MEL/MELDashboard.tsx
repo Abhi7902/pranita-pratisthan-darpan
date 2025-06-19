@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { downloadCSV } from '@/utils/csvExport';
 import { supabase } from '@/integrations/supabase/client';
 import PasswordChangeModal from '@/components/auth/PasswordChangeModal';
+import RentalHistory from './RentalHistory';
 
 interface MELDashboardProps {
   onRentEquipment: () => void;
@@ -18,6 +20,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   const { signOut, user } = useAuth();
   const { equipment, rentals, getOverdueRentals, currentMELUser } = useSupabaseMEL();
   const [userName, setUserName] = useState('');
+  const [activeView, setActiveView] = useState<'dashboard' | 'history'>('dashboard');
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -85,6 +88,52 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
       console.error('Error downloading feedback:', error);
     }
   };
+
+  if (activeView === 'history') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveView('dashboard')}
+                >
+                  ← Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-blue-600">
+                    Rental History
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button onClick={downloadRentalHistory} variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download CSV
+                </Button>
+                <PasswordChangeModal />
+                <Button 
+                  onClick={signOut}
+                  variant="outline" 
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <RentalHistory />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -177,7 +226,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
               <Button onClick={onRentEquipment} className="w-full">
                 Rent Equipment
               </Button>
-              <Button onClick={onViewHistory} variant="outline" className="w-full">
+              <Button onClick={() => setActiveView('history')} variant="outline" className="w-full">
                 View Rental History
               </Button>
             </CardContent>
