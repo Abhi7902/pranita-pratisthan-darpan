@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -396,7 +397,13 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
           <TabsContent value="rentals">
             <Card>
               <CardHeader>
-                <CardTitle>All Rentals ({rentals.length})</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>All Rentals ({rentals.length})</CardTitle>
+                  <Button onClick={downloadRentalHistory} variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download CSV
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
