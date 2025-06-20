@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { Lock, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,31 +35,31 @@ const UnifiedAdminPanel = () => {
     }
   };
 
-  const downloadFeedback = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // const downloadFeedback = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('feedback')
+  //       .select('*')
+  //       .order('created_at', { ascending: false });
       
-      if (error) throw error;
+  //     if (error) throw error;
       
-      const feedbackData = data.map(feedback => ({
-        Name: feedback.name,
-        Email: feedback.email || '',
-        'Contact Number': feedback.contact_number || '',
-        Rating: feedback.rating || '',
-        Feedback: feedback.feedback,
-        Suggestion: feedback.suggestion || '',
-        Date: new Date(feedback.created_at).toLocaleDateString()
-      }));
+  //     const feedbackData = data.map(feedback => ({
+  //       Name: feedback.name,
+  //       Email: feedback.email || '',
+  //       'Contact Number': feedback.contact_number || '',
+  //       Rating: feedback.rating || '',
+  //       Feedback: feedback.feedback,
+  //       Suggestion: feedback.suggestion || '',
+  //       Date: new Date(feedback.created_at).toLocaleDateString()
+  //     }));
       
-      downloadCSV(feedbackData, 'Feedback_Data');
-    } catch (error) {
-      console.error('Error downloading feedback:', error);
-      toast.error('Failed to download feedback data');
-    }
-  };
+  //     downloadCSV(feedbackData, 'Feedback_Data');
+  //   } catch (error) {
+  //     console.error('Error downloading feedback:', error);
+  //     toast.error('Failed to download feedback data');
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -168,15 +168,16 @@ const UnifiedAdminPanel = () => {
             <p className="text-sm text-gray-600 mb-4">Administrator Panel - Full System Access</p>
             <div className="flex justify-center gap-2">
               <PasswordChangeModal />
-              <Button onClick={downloadFeedback} variant="outline" size="sm">
+              {/* <Button onClick={downloadFeedback} variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 Download Feedback
-              </Button>
+              </Button> */}
               <Button 
                 onClick={signOut}
                 variant="outline"
                 className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
               >
+                <LogOut className="h-4 w-4 mr-2" /> 
                 लॉगआउट
               </Button>
             </div>

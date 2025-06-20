@@ -125,7 +125,7 @@ const AdminFeedbackTab = () => {
           <CardTitle>User Feedback ({feedbacks.length})</CardTitle>
           <Button onClick={downloadFeedback} variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Download CSV
+            Download Feedback
           </Button>
         </div>
       </CardHeader>
