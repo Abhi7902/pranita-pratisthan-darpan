@@ -10,6 +10,8 @@ import { downloadCSV } from '@/utils/csvExport';
 import { supabase } from '@/integrations/supabase/client';
 import PasswordChangeModal from '@/components/auth/PasswordChangeModal';
 import RentalHistory from './RentalHistory';
+import EquipmentList from './EquipmentList';
+import RentalForm from './RentalForm';
 
 interface MELDashboardProps {
   onRentEquipment: () => void;
@@ -20,7 +22,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   const { signOut, user } = useAuth();
   const { equipment, rentals, getOverdueRentals, currentMELUser } = useSupabaseMEL();
   const [userName, setUserName] = useState('');
-  const [activeView, setActiveView] = useState<'dashboard' | 'history'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'equipment' | 'rental' | 'history' | 'overdue'>('dashboard');
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -64,30 +66,92 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
     downloadCSV(rentalData, 'MEL_Rental_History');
   };
 
-  const downloadFeedback = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      const feedbackData = data.map(feedback => ({
-        Name: feedback.name,
-        Email: feedback.email || '',
-        'Contact Number': feedback.contact_number || '',
-        Rating: feedback.rating || '',
-        Feedback: feedback.feedback,
-        Suggestion: feedback.suggestion || '',
-        Date: new Date(feedback.created_at).toLocaleDateString()
-      }));
-      
-      downloadCSV(feedbackData, 'Feedback_Data');
-    } catch (error) {
-      console.error('Error downloading feedback:', error);
-    }
-  };
+  // Show different views based on activeView state
+  if (activeView === 'equipment') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveView('dashboard')}
+                >
+                  ← Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-blue-600">
+                    Medical Equipment Library
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
+                <PasswordChangeModal />
+                <Button 
+                  onClick={signOut}
+                  variant="outline" 
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <EquipmentList />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeView === 'rental') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveView('dashboard')}
+                >
+                  ← Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-blue-600">
+                    Medical Equipment Library
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
+                <PasswordChangeModal />
+                <Button 
+                  onClick={signOut}
+                  variant="outline" 
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <RentalForm onSuccess={() => setActiveView('dashboard')} />
+        </div>
+      </div>
+    );
+  }
 
   if (activeView === 'history') {
     return (
@@ -105,11 +169,12 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold text-blue-600">
-                    Rental History
+                    Medical Equipment Library
                   </h1>
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
                 <Button onClick={downloadRentalHistory} variant="outline" size="sm">
                   <Download className="h-4 w-4 mr-2" />
                   Download CSV
@@ -135,6 +200,78 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
     );
   }
 
+  if (activeView === 'overdue') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveView('dashboard')}
+                >
+                  ← Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-blue-600">
+                    Medical Equipment Library
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
+                <PasswordChangeModal />
+                <Button 
+                  onClick={signOut}
+                  variant="outline" 
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="border-red-200 bg-red-50">
+            <CardHeader>
+              <CardTitle className="text-red-800 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Overdue Equipment ({overdueRentals.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {overdueRentals.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No overdue equipment.</p>
+                ) : (
+                  overdueRentals.map((rental) => (
+                    <div key={rental.id} className="flex justify-between items-center p-3 bg-white rounded border border-red-200">
+                      <div>
+                        <p className="font-medium text-red-800">{rental.equipment_name}</p>
+                        <p className="text-sm text-red-600">
+                          Patient: {rental.patient_name} | Due: {new Date(rental.return_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Badge variant="destructive">
+                        {Math.ceil((new Date().getTime() - new Date(rental.return_date).getTime()) / (1000 * 60 * 60 * 24))} days late
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Dashboard View
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white shadow-sm border-b">
@@ -142,22 +279,12 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
           <div className="flex justify-between items-center h-16">
             <div>
               <h1 className="text-2xl font-bold text-blue-600">
-                MEL Dashboard
+                Medical Equipment Library
               </h1>
-              <p className="text-sm text-gray-600">
-                Welcome, {userName || 'User'}
-              </p>
             </div>
             <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
               <PasswordChangeModal />
-              <Button onClick={downloadRentalHistory} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download Rentals
-              </Button>
-              <Button onClick={downloadFeedback} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download Feedback
-              </Button>
               <Button 
                 onClick={signOut}
                 variant="outline" 
@@ -216,77 +343,63 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+        {/* Navigation Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveView('equipment')}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl text-blue-600">Equipments</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button onClick={onRentEquipment} className="w-full">
-                Rent Equipment
-              </Button>
-              <Button onClick={() => setActiveView('history')} variant="outline" className="w-full">
-                View Rental History
+            <CardContent className="text-center">
+              <p className="text-gray-600">View all available medical equipment</p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveView('rental')}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl text-green-600">Create Rental</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-600">Create new equipment rental</p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveView('history')}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl text-purple-600">Rental History</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-600">View rental history and download CSV</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={(e) => {
+                e.stopPropagation();
+                downloadRentalHistory();
+              }}>
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {rentals.slice(0, 3).map((rental) => (
-                  <div key={rental.id} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{rental.equipment_name}</p>
-                      <p className="text-sm text-gray-600">{rental.patient_name}</p>
-                    </div>
-                    <Badge variant={rental.status === 'returned' ? 'secondary' : 'default'}>
-                      {rental.status}
-                    </Badge>
-                  </div>
-                ))}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveView('overdue')}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-white" />
               </div>
+              <CardTitle className="text-xl text-red-600">Overdue List</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-600">View overdue equipment ({overdueRentals.length})</p>
             </CardContent>
           </Card>
         </div>
-
-        {/* Overdue Equipment Alert */}
-        {overdueRentals.length > 0 && (
-          <Card className="border-red-200 bg-red-50">
-            <CardHeader>
-              <CardTitle className="text-red-800 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Overdue Equipment ({overdueRentals.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {overdueRentals.slice(0, 5).map((rental) => (
-                  <div key={rental.id} className="flex justify-between items-center p-3 bg-white rounded border border-red-200">
-                    <div>
-                      <p className="font-medium text-red-800">{rental.equipment_name}</p>
-                      <p className="text-sm text-red-600">
-                        Patient: {rental.patient_name} | Due: {new Date(rental.return_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant="destructive">
-                      {Math.ceil((new Date().getTime() - new Date(rental.return_date).getTime()) / (1000 * 60 * 60 * 24))} days late
-                    </Badge>
-                  </div>
-                ))}
-                {overdueRentals.length > 5 && (
-                  <p className="text-sm text-red-600 text-center">
-                    And {overdueRentals.length - 5} more overdue items...
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

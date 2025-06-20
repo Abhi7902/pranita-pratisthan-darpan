@@ -118,12 +118,18 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchMELUsers = async () => {
     try {
+      // Use the authenticated session to make the request
       const { data, error } = await supabase
         .from('mel_users')
         .select('*')
         .order('full_name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching MEL users:', error);
+        toast.error('Failed to load MEL users');
+        return;
+      }
+      
       setMELUsers(data || []);
     } catch (error) {
       console.error('Error fetching MEL users:', error);
