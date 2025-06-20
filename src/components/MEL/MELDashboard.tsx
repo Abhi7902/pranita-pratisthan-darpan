@@ -147,7 +147,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <RentalForm onSuccess={() => setActiveView('dashboard')} />
+          <RentalForm />
         </div>
       </div>
     );
