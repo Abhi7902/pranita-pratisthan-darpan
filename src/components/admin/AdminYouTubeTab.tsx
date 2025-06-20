@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { extractYouTubeVideoId } from '@/lib/youtube';
 
 interface YouTubeVideo {
   id: string;
@@ -40,9 +41,17 @@ const AdminYouTubeTab = () => {
 
   const handleAdd = async () => {
     if (!title || !videoId) {
-      toast.error('Title and videoId required');
+      toast.error('Title and Video ID/URL required');
       return;
     }
+
+    // Extract clean video ID from URL or use as-is if already clean
+    const cleanVideoId = extractYouTubeVideoId(videoId);
+    if (!cleanVideoId) {
+      toast.error('Invalid YouTube video ID or URL. Please check the format.');
+      return;
+    }
+
     setUploading(true);
     try {
       let thumbUrl = '';
@@ -58,7 +67,7 @@ const AdminYouTubeTab = () => {
       }
       const { error } = await supabase.from('youtube_videos').insert({
         title,
-        video_id: videoId,
+        video_id: cleanVideoId, // Use the clean video ID
         description: desc,
         thumbnail_url: thumbUrl,
         is_news: videoType === 'news'
@@ -69,9 +78,10 @@ const AdminYouTubeTab = () => {
       setDesc('');
       setVideoType('normal');
       setThumbnail(null);
-      toast.success('Video added');
+      toast.success('Video added successfully');
       fetchVideos();
-    } catch {
+    } catch (error) {
+      console.error('Error adding video:', error);
       toast.error('Failed to add video');
     }
     setUploading(false);
@@ -80,11 +90,22 @@ const AdminYouTubeTab = () => {
   const handleDelete = async (id: string) => {
     try {
       await supabase.from('youtube_videos').delete().eq('id', id);
-      toast.success('Deleted');
+      toast.success('Video deleted');
       fetchVideos();
     } catch {
       toast.error('Delete failed');
     }
+  };
+
+  const getVideoThumbnail = (video: YouTubeVideo): string => {
+    if (video.thumbnail_url) {
+      return video.thumbnail_url;
+    }
+    const cleanVideoId = extractYouTubeVideoId(video.video_id);
+    if (cleanVideoId) {
+      return `https://img.youtube.com/vi/${cleanVideoId}/maxresdefault.jpg`;
+    }
+    return '/placeholder.svg';
   };
 
   return (
@@ -96,8 +117,12 @@ const AdminYouTubeTab = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <Input placeholder="Video Title" value={title}
             onChange={e => setTitle(e.target.value)} />
-          <Input placeholder="YouTube Video ID" value={videoId}
-            onChange={e => setVideoId(e.target.value)} />
+          <Input 
+            placeholder="YouTube Video ID or URL" 
+            value={videoId}
+            onChange={e => setVideoId(e.target.value)}
+            title="Enter YouTube video ID, full URL, or youtu.be link"
+          />
           <Input placeholder="Description" value={desc}
             onChange={e => setDesc(e.target.value)} />
           <Input type="file" accept="image/*"
@@ -119,15 +144,24 @@ const AdminYouTubeTab = () => {
           </RadioGroup>
         </div>
 
-        <Button onClick={handleAdd} disabled={uploading} className="mb-8">Add Video</Button>
+        <Button onClick={handleAdd} disabled={uploading} className="mb-8">
+          {uploading ? 'Adding...' : 'Add Video'}
+        </Button>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {videos.map(vid => (
             <div key={vid.id} className="border rounded p-3">
-              {vid.thumbnail_url &&
-                <img src={vid.thumbnail_url} alt={vid.title} className="w-full h-32 object-cover rounded mb-2" />}
+              <img 
+                src={getVideoThumbnail(vid)} 
+                alt={vid.title} 
+                className="w-full h-32 object-cover rounded mb-2"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
+              />
               <div className="font-bold">{vid.title}</div>
-              <div className="text-xs text-gray-700">{vid.video_id}</div>
+              <div className="text-xs text-gray-700">ID: {vid.video_id}</div>
               <div className="text-xs text-gray-500 mb-2">{vid.description}</div>
               <div className="text-xs font-medium mb-2">
                 Type: <span className={vid.is_news ? 'text-red-600' : 'text-blue-600'}>

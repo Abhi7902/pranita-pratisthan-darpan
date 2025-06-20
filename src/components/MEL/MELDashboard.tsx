@@ -66,43 +66,50 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
     downloadCSV(rentalData, 'MEL_Rental_History');
   };
 
+  // Custom MEL Navbar Component
+  const MELNavbar = () => (
+    <div className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-4">
+            {activeView !== 'dashboard' && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setActiveView('dashboard')}
+              >
+                ← Back to Dashboard
+              </Button>
+            )}
+            <div className="flex items-center gap-2">
+              <PasswordChangeModal />
+              <Button 
+                onClick={signOut}
+                variant="outline" 
+                size="sm"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+          <div className="text-right">
+            <h1 className="text-2xl font-bold text-blue-600">
+              Medical Equipment Library
+            </h1>
+            <p className="text-sm text-gray-600">Welcome, {userName || 'User'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Show different views based on activeView state
   if (activeView === 'equipment') {
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setActiveView('dashboard')}
-                >
-                  ← Back to Dashboard
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600">
-                    Medical Equipment Library
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
-                <PasswordChangeModal />
-                <Button 
-                  onClick={signOut}
-                  variant="outline" 
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MELNavbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <EquipmentList />
         </div>
@@ -113,39 +120,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   if (activeView === 'rental') {
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setActiveView('dashboard')}
-                >
-                  ← Back to Dashboard
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600">
-                    Medical Equipment Library
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
-                <PasswordChangeModal />
-                <Button 
-                  onClick={signOut}
-                  variant="outline" 
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MELNavbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <RentalForm />
         </div>
@@ -156,44 +131,14 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   if (activeView === 'history') {
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setActiveView('dashboard')}
-                >
-                  ← Back to Dashboard
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600">
-                    Medical Equipment Library
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
-                <Button onClick={downloadRentalHistory} variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download CSV
-                </Button>
-                <PasswordChangeModal />
-                <Button 
-                  onClick={signOut}
-                  variant="outline" 
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MELNavbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-4 flex justify-end">
+            <Button onClick={downloadRentalHistory} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Download CSV
+            </Button>
+          </div>
           <RentalHistory />
         </div>
       </div>
@@ -203,39 +148,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   if (activeView === 'overdue') {
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setActiveView('dashboard')}
-                >
-                  ← Back to Dashboard
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600">
-                    Medical Equipment Library
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
-                <PasswordChangeModal />
-                <Button 
-                  onClick={signOut}
-                  variant="outline" 
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MELNavbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Card className="border-red-200 bg-red-50">
             <CardHeader>
@@ -274,30 +187,7 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
   // Main Dashboard View
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div>
-              <h1 className="text-2xl font-bold text-blue-600">
-                Medical Equipment Library
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Welcome, {userName || 'User'}</span>
-              <PasswordChangeModal />
-              <Button 
-                onClick={signOut}
-                variant="outline" 
-                size="sm"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MELNavbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
@@ -378,13 +268,6 @@ const MELDashboard = ({ onRentEquipment, onViewHistory }: MELDashboardProps) => 
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-gray-600">View rental history and download CSV</p>
-              <Button variant="outline" size="sm" className="mt-2" onClick={(e) => {
-                e.stopPropagation();
-                downloadRentalHistory();
-              }}>
-                <Download className="h-4 w-4 mr-2" />
-                Download CSV
-              </Button>
             </CardContent>
           </Card>
 

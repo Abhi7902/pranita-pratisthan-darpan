@@ -2,6 +2,7 @@
 import { Play, ExternalLink, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppContext } from '@/contexts/AppContext';
+import { extractYouTubeVideoId, getYouTubeEmbedUrl } from '@/lib/youtube';
 
 const YouTubeSection = () => {
   const { youtubeVideos } = useAppContext();
@@ -27,6 +28,14 @@ const YouTubeSection = () => {
   const featuredVideo = youtubeVideos[0];
   const otherVideos = youtubeVideos.slice(1);
 
+  const getVideoThumbnail = (videoId: string): string => {
+    const cleanVideoId = extractYouTubeVideoId(videoId);
+    if (cleanVideoId) {
+      return `https://img.youtube.com/vi/${cleanVideoId}/maxresdefault.jpg`;
+    }
+    return '/placeholder.svg';
+  };
+
   return (
     <section className="py-20 bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,10 +54,12 @@ const YouTubeSection = () => {
           <div className="relative rounded-lg overflow-hidden cultural-shadow">
             <div className="aspect-video bg-gray-800 flex items-center justify-center">
               <iframe
-                src={`https://www.youtube.com/embed/${featuredVideo.videoId}`}
+                src={getYouTubeEmbedUrl(featuredVideo.videoId)}
                 title={featuredVideo.title}
                 className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
               ></iframe>
             </div>
           </div>
@@ -73,9 +84,13 @@ const YouTubeSection = () => {
               <div key={video.id} className="bg-gray-900 rounded-lg overflow-hidden cultural-shadow hover:scale-105 transition-transform">
                 <div className="relative">
                   <img
-                    src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                    src={getVideoThumbnail(video.videoId)}
                     alt={video.title}
                     className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center group-hover:bg-black/30 transition-colors">
                     <Play className="h-12 w-12 text-white" />

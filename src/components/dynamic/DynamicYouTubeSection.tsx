@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { extractYouTubeVideoId, getYouTubeEmbedUrl } from '@/lib/youtube';
 
 interface YouTubeVideo {
   id: string;
@@ -44,6 +45,20 @@ const DynamicYouTubeSection = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getVideoThumbnail = (video: YouTubeVideo): string => {
+    // Use custom thumbnail if available, otherwise use YouTube's thumbnail
+    if (video.thumbnail_url) {
+      return video.thumbnail_url;
+    }
+    
+    const videoId = extractYouTubeVideoId(video.video_id);
+    if (videoId) {
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+    
+    return '/placeholder.svg';
   };
 
   if (loading) {
@@ -94,11 +109,12 @@ const DynamicYouTubeSection = () => {
                 <CardContent className="p-0">
                   <div className="aspect-video relative">
                     <iframe
-                      src={`https://www.youtube.com/embed/${selectedVideo.video_id}`}
+                      src={getYouTubeEmbedUrl(selectedVideo.video_id)}
                       title={selectedVideo.title}
                       className="w-full h-full rounded-t-lg"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
                     ></iframe>
                   </div>
                   <div className="p-6">
@@ -134,12 +150,16 @@ const DynamicYouTubeSection = () => {
                     <div className="flex space-x-3">
                       <div className="flex-shrink-0 relative">
                         <img
-                          src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/maxresdefault.jpg`}
+                          src={getVideoThumbnail(video)}
                           alt={video.title}
                           className="w-20 h-12 object-cover rounded"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Play className="h-4 w-4 text-white" />
+                          <Play className="h-4 w-4 text-white drop-shadow-lg" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
