@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -80,16 +79,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check roles after a short delay to ensure database is ready
-          setTimeout(async () => {
-            await checkUserRoles(session.user.id);
-            setLoading(false);
-          }, 100);
+          // Check roles after setting user
+          await checkUserRoles(session.user.id);
         } else {
+          // Clear roles when no user
           setIsAdmin(false);
           setIsMELUser(false);
-          setLoading(false);
         }
+        setLoading(false);
       }
     );
 
@@ -100,10 +97,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(async () => {
-          await checkUserRoles(session.user.id);
+        checkUserRoles(session.user.id).then(() => {
           setLoading(false);
-        }, 100);
+        });
       } else {
         setLoading(false);
       }
@@ -120,7 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
     
     if (!error && data.user) {
-      // Check user roles immediately after login
+      // Roles will be checked by the auth state change listener
       const roles = await checkUserRoles(data.user.id);
       setLoading(false);
       return { error, ...roles };
@@ -131,9 +127,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setIsAdmin(false);
-    setIsMELUser(false);
+    try {
+      console.log('Signing out user');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+      }
+      // Clear all state
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      setIsMELUser(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const updatePassword = async (newPassword: string) => {
