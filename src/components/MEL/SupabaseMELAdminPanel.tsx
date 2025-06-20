@@ -4,19 +4,19 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Edit, LogOut } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import PasswordChangeModal from '@/components/auth/PasswordChangeModal';
+import Navbar from '@/components/Navbar';
 
 interface SupabaseMELAdminPanelProps {
   onBackToUser: () => void;
 }
 
 const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => {
-  const { createMELUser, signOut } = useAuth();
+  const { createMELUser } = useAuth();
   const navigate = useNavigate();
   const {
     equipment,
@@ -46,10 +46,6 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
     full_name: '',
     email: ''
   });
-
-  const handleBackToUnifiedAdmin = () => {
-    navigate('/admin');
-  };
 
   const handleAddEquipment = async () => {
     if (!newEquipment.name) {
@@ -104,6 +100,10 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Navbar 
+          activeSection="mel" 
+          onNavigate={(section) => navigate(`/${section}`)} 
+        />
         <p className="text-gray-600">Loading...</p>
       </div>
     );
@@ -111,42 +111,26 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleBackToUnifiedAdmin}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Admin Panel
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-blue-600">
-                  MEL Admin Panel
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Medical Equipment Library Administration
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <PasswordChangeModal />
-              <Button 
-                onClick={signOut}
-                variant="outline" 
-                size="sm"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
+      <Navbar 
+        activeSection="mel" 
+        onNavigate={(section) => navigate(`/${section}`)} 
+      />
+      <div className="text-center mb-12">
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onBackToUser}
+            className="border-marathi-orange text-marathi-orange hover:bg-marathi-orange hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            मागे
+          </Button>
+          <h2 className="text-4xl font-bold text-marathi-orange">
+            MEL Settings
+          </h2>
         </div>
+        <div className="w-24 h-1 saffron-gradient mx-auto mb-6"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
