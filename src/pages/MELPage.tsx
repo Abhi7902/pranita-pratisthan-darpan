@@ -30,7 +30,7 @@ const MELPage = () => {
     );
   }
 
-  // If not logged in, show login
+  // If not logged in, show login with navbar
   if (!user) {
     return (
       <div>
@@ -40,40 +40,27 @@ const MELPage = () => {
     );
   }
 
-  // If admin wants admin view
+  // If admin wants admin view - NO NAVBAR, just the admin panel
   if (isAdmin && isAdminView) {
-    return (
-      <div>
-        <Navbar activeSection="mel" onNavigate={handleNavigate} />
-        <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />
-      </div>
-    );
+    return <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />;
   }
 
-  // If admin but not in admin view, show admin panel by default
+  // If admin but not in admin view - NO NAVBAR, just the admin panel
   if (isAdmin && !isAdminView) {
-    return (
-      <div>
-        <Navbar activeSection="mel" onNavigate={handleNavigate} />
-        <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />
-      </div>
-    );
+    return <SupabaseMELAdminPanel onBackToUser={() => setIsAdminView(false)} />;
   }
 
-  // If MEL user, show dashboard with proper props
+  // If MEL user - NO NAVBAR, just the dashboard with custom navbar
   if (isMELUser) {
     return (
-      <div>
-        <Navbar activeSection="mel" onNavigate={handleNavigate} />
-        <MELDashboard 
-          onRentEquipment={() => console.log('Navigate to rent equipment')} 
-          onViewHistory={() => console.log('Navigate to rental history')} 
-        />
-      </div>
+      <MELDashboard 
+        onRentEquipment={() => console.log('Navigate to rent equipment')} 
+        onViewHistory={() => console.log('Navigate to rental history')} 
+      />
     );
   }
 
-  // If logged in but not authorized for MEL
+  // If logged in but not authorized for MEL - show with navbar
   return (
     <div>
       <Navbar activeSection="mel" onNavigate={handleNavigate} />

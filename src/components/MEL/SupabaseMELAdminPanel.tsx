@@ -1,16 +1,14 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Edit, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSupabaseMEL } from '@/contexts/SupabaseMELContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { downloadCSV } from '@/utils/csvExport';
+import { useNavigate } from 'react-router-dom';
 import PasswordChangeModal from '@/components/auth/PasswordChangeModal';
 
 interface SupabaseMELAdminPanelProps {
@@ -18,7 +16,8 @@ interface SupabaseMELAdminPanelProps {
 }
 
 const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => {
-  const { createMELUser } = useAuth();
+  const { createMELUser, signOut } = useAuth();
+  const navigate = useNavigate();
   const {
     equipment,
     melUsers,
@@ -48,35 +47,8 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
     email: ''
   });
 
-  const [uploading, setUploading] = useState(false);
-
-  const handleImageUpload = async (file: File, folder: string = 'equipment') => {
-    if (!file) return null;
-
-    setUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${folder}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('equipment')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('equipment')
-        .getPublicUrl(filePath);
-
-      setUploading(false);
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-      setUploading(false);
-      return null;
-    }
+  const handleBackToUnifiedAdmin = () => {
+    navigate('/admin');
   };
 
   const handleAddEquipment = async () => {
@@ -127,44 +99,6 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
     }
   };
 
-  const downloadRentalHistory = () => {
-    const rentalData = rentals.map(rental => ({
-      Equipment: rental.equipment_name,
-      Patient: rental.patient_name,
-      Mobile: rental.mobile_number,
-      'Pickup Date': new Date(rental.pickup_date).toLocaleDateString(),
-      'Return Date': new Date(rental.return_date).toLocaleDateString(),
-      Status: rental.status
-    }));
-    downloadCSV(rentalData, 'MEL_Rental_History');
-  };
-
-  const downloadFeedback = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      const feedbackData = data.map(feedback => ({
-        Name: feedback.name,
-        Email: feedback.email || '',
-        'Contact Number': feedback.contact_number || '',
-        Rating: feedback.rating || '',
-        Feedback: feedback.feedback,
-        Suggestion: feedback.suggestion || '',
-        Date: new Date(feedback.created_at).toLocaleDateString()
-      }));
-      
-      downloadCSV(feedbackData, 'Feedback_Data');
-    } catch (error) {
-      console.error('Error downloading feedback:', error);
-      toast.error('Failed to download feedback data');
-    }
-  };
-
   const overdueRentals = getOverdueRentals();
 
   if (loading) {
@@ -184,11 +118,11 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={onBackToUser}
+                onClick={handleBackToUnifiedAdmin}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                Back to Admin Panel
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-blue-600">
@@ -201,13 +135,14 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
             </div>
             <div className="flex items-center gap-2">
               <PasswordChangeModal />
-              <Button onClick={downloadRentalHistory} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download Rentals
-              </Button>
-              <Button onClick={downloadFeedback} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download Feedback
+              <Button 
+                onClick={signOut}
+                variant="outline" 
+                size="sm"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
@@ -235,23 +170,11 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
                     value={newEquipment.name}
                     onChange={(e) => setNewEquipment({...newEquipment, name: e.target.value})}
                   />
-                  <div>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const photoUrl = await handleImageUpload(file);
-                          if (photoUrl) {
-                            setNewEquipment({...newEquipment, photo_url: photoUrl});
-                          }
-                        }
-                      }}
-                      disabled={uploading}
-                    />
-                    {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
-                  </div>
+                  <Input
+                    placeholder="Equipment photo URL"
+                    value={newEquipment.photo_url}
+                    onChange={(e) => setNewEquipment({...newEquipment, photo_url: e.target.value})}
+                  />
                   <Input
                     type="number"
                     placeholder="Total quantity"
@@ -277,7 +200,7 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
                     onChange={(e) => setNewEquipment({...newEquipment, deposit_amount: parseInt(e.target.value) || 0})}
                   />
                 </div>
-                <Button onClick={handleAddEquipment} className="mt-4" disabled={uploading}>
+                <Button onClick={handleAddEquipment} className="mt-4">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Equipment
                 </Button>
@@ -329,6 +252,7 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
             <Card>
               <CardHeader>
                 <CardTitle>Create New MEL User</CardTitle>
+                <p className="text-sm text-gray-600">Only administrators can create MEL user accounts</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -397,13 +321,7 @@ const SupabaseMELAdminPanel = ({ onBackToUser }: SupabaseMELAdminPanelProps) => 
           <TabsContent value="rentals">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>All Rentals ({rentals.length})</CardTitle>
-                  <Button onClick={downloadRentalHistory} variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download CSV
-                  </Button>
-                </div>
+                <CardTitle>All Rentals ({rentals.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
