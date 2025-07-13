@@ -33,8 +33,36 @@ const AdminPhotoGalleryTab = () => {
       .from('photo_gallery')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) toast.error('Failed to load gallery');
+    if (error) {
+      console.error('Error fetching photos:', error);
+      toast.error('Failed to load gallery');
+    }
     setPhotos(data || []);
+  };
+
+  const ensureBucketExists = async () => {
+    try {
+      // Check if bucket exists
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      
+      if (listError) {
+        console.error('Error listing buckets:', listError);
+        return false;
+      }
+
+      const galleryBucket = buckets?.find(bucket => bucket.name === 'gallery');
+      
+      if (!galleryBucket) {
+        console.error('Gallery bucket does not exist');
+        toast.error('Storage bucket not found. Please contact administrator.');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking bucket:', error);
+      return false;
+    }
   };
 
   const handleAddPhoto = async () => {
@@ -42,50 +70,103 @@ const AdminPhotoGalleryTab = () => {
       toast.error('Photo and title required');
       return;
     }
+
     setUploading(true);
+    
     try {
+      // Ensure bucket exists
+      const bucketExists = await ensureBucketExists();
+      if (!bucketExists) {
+        setUploading(false);
+        return;
+      }
+
       const ext = image.name.split('.').pop();
       const filename = `gallery_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await supabase.storage
+      
+      console.log('Uploading file:', filename);
+      
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('gallery')
-        .upload(filename, image, { upsert: true });
-      if (uploadError) throw uploadError;
+        .upload(filename, image, { 
+          cacheControl: '3600',
+          upsert: false 
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      console.log('Upload successful:', uploadData);
+
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(filename);
 
-      const { error } = await supabase
+      console.log('Public URL:', publicUrl);
+
+      const { error: insertError } = await supabase
         .from('photo_gallery')
         .insert({
           title,
-          category,
+          category: category || null,
           image_url: publicUrl,
           image_path: filename
         });
-      if (error) throw error;
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw new Error(`Database error: ${insertError.message}`);
+      }
+
       setTitle('');
       setCategory('');
       setImage(null);
-      toast.success('Photo added');
+      
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      toast.success('Photo added successfully');
       fetchPhotos();
     } catch (error) {
-      toast.error('Failed to add photo');
+      console.error('Error adding photo:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add photo');
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleDeletePhoto = async (photo: Photo) => {
     try {
+      // Delete from storage if image_path exists
       if (photo.image_url) {
-        // Try to extract filename for removal
-        const parts = photo.image_url.split('/');
-        const filename = parts[parts.length - 1];
-        await supabase.storage.from('gallery').remove([filename]);
+        const filename = photo.image_url.split('/').pop();
+        if (filename) {
+          const { error: storageError } = await supabase.storage
+            .from('gallery')
+            .remove([filename]);
+          
+          if (storageError) {
+            console.warn('Storage deletion warning:', storageError);
+          }
+        }
       }
-      await supabase.from('photo_gallery').delete().eq('id', photo.id);
+
+      const { error: deleteError } = await supabase
+        .from('photo_gallery')
+        .delete()
+        .eq('id', photo.id);
+
+      if (deleteError) throw deleteError;
+
       toast.success('Photo removed');
       fetchPhotos();
-    } catch {
+    } catch (error) {
+      console.error('Error deleting photo:', error);
       toast.error('Failed to remove photo');
     }
   };
@@ -115,7 +196,7 @@ const AdminPhotoGalleryTab = () => {
           />
         </div>
         <Button onClick={handleAddPhoto} disabled={uploading || !title || !image}>
-          Add Photo
+          {uploading ? 'Uploading...' : 'Add Photo'}
         </Button>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
