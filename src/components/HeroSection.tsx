@@ -24,7 +24,7 @@ const HeroSection = () => {
       <div 
         className="relative h-screen bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
+          backgroundImage: `url('/hero.png')`
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
