@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface Photo {
   id: string;
@@ -14,44 +14,34 @@ interface Photo {
   project_id?: string | null;
 }
 
-interface Project {
-  id: string;
-  name: string;
-}
-
 const DynamicPhotoGallery = () => {
+  const { programs: projects, loading: contextLoading } = useAppContext();
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch projects
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id, name')
-        .order('name');
-      if (!error) setProjects(data || []);
-    };
-    fetchProjects();
-  }, []);
-
-  // Fetch photos
+  // Fetch photos with timeout
   useEffect(() => {
     const fetchPhotos = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const fetchPromise = supabase
           .from('photo_gallery')
           .select('*')
           .order('created_at', { ascending: false });
+        
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), 8000)
+        );
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
         if (error) throw error;
         setPhotos(data || []);
       } catch (error) {
         console.error('Error fetching photos:', error);
+        setPhotos([]);
       } finally {
         setLoading(false);
       }
@@ -64,7 +54,7 @@ const DynamicPhotoGallery = () => {
     ? photos.filter((p) => p.project_id === selectedProjectId)
     : photos;
 
-  if (loading) {
+  if (loading || contextLoading) {
     return (
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,13 +152,13 @@ const DynamicPhotoGallery = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-lg text-gray-800 mb-2">{photo.title}</h3>
-                      <p className="text-sm text-gray-600 italic">
-                        {
-                          photo.project_id
-                            ? (projects.find(proj => proj.id === photo.project_id)?.name || '...')
-                            : (photo.category || '')
-                        }
-                      </p>
+                       <p className="text-sm text-gray-600 italic">
+                         {
+                           photo.project_id
+                             ? (projects.find(proj => proj.id === photo.project_id)?.name || '...')
+                             : (photo.category || '')
+                         }
+                       </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -183,10 +173,10 @@ const DynamicPhotoGallery = () => {
                     />
                     <div className="p-6 text-center">
                       <h3 className="font-bold text-2xl text-marathi-orange mb-2">{selectedPhoto.title}</h3>
-                      <p className="text-md text-gray-700">{selectedPhoto.project_id
-                        ? (projects.find(proj => proj.id === selectedPhoto.project_id)?.name || '...')
-                        : (selectedPhoto.category || '')
-                      }</p>
+                       <p className="text-md text-gray-700">{selectedPhoto.project_id
+                         ? (projects.find(proj => proj.id === selectedPhoto.project_id)?.name || '...')
+                         : (selectedPhoto.category || '')
+                       }</p>
                     </div>
                   </div>
                 )}

@@ -108,6 +108,8 @@ interface AppContextType {
   markFeedbackAsRead: (id: string) => void;
   organizationInfo: OrganizationInfo;
   updateOrganizationInfo: (info: OrganizationInfo) => void;
+  loading: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -127,6 +129,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentMELUser, setCurrentMELUser] = useState<MELUser | null>(null);
   const [melRentals, setMelRentals] = useState<MELRental[]>([]);
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     president: {
@@ -139,29 +142,131 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   });
 
-  // --- PROGRAMS FETCH FROM SUPABASE ---
-  const fetchPrograms = async () => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('id, name, description, details, image_url');
-    if (error) {
-      console.error("Error fetching projects from Supabase:", error.message);
-      return;
+  // --- DATA FETCHING FUNCTIONS ---
+  const fetchTimelineEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('timeline_events')
+        .select('*')
+        .order('year', { ascending: true });
+      
+      if (error) throw error;
+      setTimelineEvents(data?.map(event => ({
+        year: event.year,
+        title: event.title,
+        description: event.description || '',
+        icon: event.icon || 'Award',
+        color: event.color || 'bg-marathi-orange'
+      })) || []);
+    } catch (error) {
+      console.error("Error fetching timeline events:", error);
+      setTimelineEvents([]);
     }
-    // Convert to Program[] and add 'image' alias if needed
-    setPrograms(
-      data.map((p) => ({
+  };
+
+  const fetchNewsItems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setNewsItems(data?.map(news => ({
+        id: news.id,
+        title: news.title,
+        summary: news.summary || '',
+        content: news.content,
+        author: news.author || '',
+        date: news.date || news.created_at
+      })) || []);
+    } catch (error) {
+      console.error("Error fetching news items:", error);
+      setNewsItems([]);
+    }
+  };
+
+  const fetchYouTubeVideos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('youtube_videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setYouTubeVideos(data?.map(video => ({
+        id: video.id,
+        title: video.title,
+        videoId: video.video_id,
+        description: video.description || ''
+      })) || []);
+    } catch (error) {
+      console.error("Error fetching YouTube videos:", error);
+      setYouTubeVideos([]);
+    }
+  };
+
+  const fetchPrograms = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, name, description, details, image_url');
+      
+      if (error) throw error;
+      setPrograms(data?.map(p => ({
         id: p.id,
         name: p.name,
         description: p.description,
         details: p.details,
         image: p.image_url || undefined,
-      }))
-    );
+      })) || []);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setPrograms([]);
+    }
+  };
+
+  const fetchPopupData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('popup_events')
+        .select('*')
+        .eq('enabled', true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      if (data) {
+        setPopupData({
+          enabled: data.enabled,
+          title: data.title,
+          description: data.description || '',
+          date: data.date || '',
+          location: data.location || '',
+          bannerImage: data.banner_image_url || undefined
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching popup data:", error);
+    }
+  };
+
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.allSettled([
+        fetchTimelineEvents(),
+        fetchNewsItems(),
+        fetchYouTubeVideos(),
+        fetchPrograms(),
+        fetchPopupData()
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchPrograms();
+    refreshData();
   }, []);
 
   // When a new program is added, insert to Supabase and refresh
@@ -253,6 +358,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         markFeedbackAsRead,
         organizationInfo,
         updateOrganizationInfo,
+        loading,
+        refreshData,
       }}
     >
       {children}

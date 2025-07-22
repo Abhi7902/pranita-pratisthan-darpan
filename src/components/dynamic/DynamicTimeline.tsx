@@ -1,15 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Award, Users, Heart, Star } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-
-interface TimelineEvent {
-  id: string;
-  year: string;
-  title: string;
-  description: string;
-  icon: string;
-  color: string;
-}
+import { useAppContext } from '@/contexts/AppContext';
 
 const iconMap = {
   Award,
@@ -19,28 +9,7 @@ const iconMap = {
 };
 
 const DynamicTimeline = () => {
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('timeline_events')
-          .select('*')
-          .order('year', { ascending: true });
-
-        if (error) throw error;
-        setEvents(data || []);
-      } catch (error) {
-        console.error('Error fetching timeline events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []);
+  const { timelineEvents: events, loading } = useAppContext();
 
   if (loading) {
     return (
@@ -96,8 +65,8 @@ const DynamicTimeline = () => {
               const IconComponent = iconMap[event.icon as keyof typeof iconMap] || Award;
               const isLeft = index % 2 === 0;
               return (
-                <div
-                  key={event.id}
+                 <div
+                   key={`${event.year}-${index}`}
                   className={`relative flex flex-col md:flex-row items-center group`}
                 >
                   {/* Timeline Card */}
