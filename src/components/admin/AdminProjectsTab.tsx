@@ -28,48 +28,132 @@ const AdminProjectsTab = () => {
   const fetchProjects = async () => {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
     setProjects(data || []);
-    if (error) toast.error('Project fetch failed');
+    if (error) {
+      console.error('Error fetching projects:', error);
+      toast.error('Project fetch failed');
+    }
+  };
+
+  const ensureBucketExists = async () => {
+    try {
+      // Check if bucket exists
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      
+      if (listError) {
+        console.error('Error listing buckets:', listError);
+        return false;
+      }
+
+      const galleryBucket = buckets?.find(bucket => bucket.name === 'gallery');
+      
+      if (!galleryBucket) {
+        console.error('Gallery bucket does not exist');
+        toast.error('Storage bucket not found. Please contact administrator.');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking bucket:', error);
+      return false;
+    }
   };
 
   const handleAdd = async () => {
     if (!form.name || !form.description || !form.image) {
-      toast.error('Name, desc, and image required');
+      toast.error('Name, description, and image required');
       return;
     }
+    
     setUploading(true);
+    
     try {
+      // Ensure bucket exists
+      const bucketExists = await ensureBucketExists();
+      if (!bucketExists) {
+        setUploading(false);
+        return;
+      }
+
       const ext = (form.image as File).name.split('.').pop();
       const filename = `project_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
+      
+      console.log('Uploading project file:', filename);
+      
+      const { error: uploadErr, data: uploadData } = await supabase.storage
         .from('gallery')
-        .upload(filename, form.image as File, { upsert: true });
-      if (uploadErr) throw uploadErr;
+        .upload(filename, form.image as File, { 
+          cacheControl: '3600',
+          upsert: false 
+        });
+
+      if (uploadErr) {
+        console.error('Upload error:', uploadErr);
+        throw new Error(`Upload failed: ${uploadErr.message}`);
+      }
+
+      console.log('Project upload successful:', uploadData);
+
       const { data: { publicUrl } } = supabase.storage
         .from('gallery').getPublicUrl(filename);
 
-      const { error } = await supabase.from('projects').insert({
+      console.log('Project public URL:', publicUrl);
+
+      const { error: insertError } = await supabase.from('projects').insert({
         name: form.name,
         description: form.description,
         details: form.details,
         image_url: publicUrl,
         image_path: filename
       });
-      if (error) throw error;
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw new Error(`Database error: ${insertError.message}`);
+      }
+
       setForm({ name: '', description: '', details: '', image: null });
-      toast.success('Project added');
+      
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      toast.success('Project added successfully');
       fetchProjects();
-    } catch {
-      toast.error('Failed to add project');
+    } catch (error) {
+      console.error('Error adding project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add project');
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleDelete = async (proj: Project) => {
     try {
-      await supabase.from('projects').delete().eq('id', proj.id);
+      // Delete from storage if image exists
+      if (proj.image_url) {
+        const filename = proj.image_url.split('/').pop();
+        if (filename) {
+          const { error: storageError } = await supabase.storage
+            .from('gallery')
+            .remove([filename]);
+          
+          if (storageError) {
+            console.warn('Storage deletion warning:', storageError);
+          }
+        }
+      }
+
+      const { error: deleteError } = await supabase.from('projects').delete().eq('id', proj.id);
+      
+      if (deleteError) throw deleteError;
+
       toast.success('Project removed');
       fetchProjects();
-    } catch {
+    } catch (error) {
+      console.error('Error deleting project:', error);
       toast.error('Remove failed');
     }
   };
@@ -93,7 +177,7 @@ const AdminProjectsTab = () => {
           />
         </div>
         <Button onClick={handleAdd} disabled={uploading || !form.name || !form.description || !form.image}>
-          Add Program
+          {uploading ? 'Uploading...' : 'Add Program'}
         </Button>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
