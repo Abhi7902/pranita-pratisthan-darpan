@@ -108,8 +108,6 @@ interface AppContextType {
   markFeedbackAsRead: (id: string) => void;
   organizationInfo: OrganizationInfo;
   updateOrganizationInfo: (info: OrganizationInfo) => void;
-  loading: boolean;
-  refreshData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -129,7 +127,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentMELUser, setCurrentMELUser] = useState<MELUser | null>(null);
   const [melRentals, setMelRentals] = useState<MELRental[]>([]);
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
   
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     president: {
@@ -142,162 +139,29 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   });
 
-  // --- DATA FETCHING FUNCTIONS ---
-  const fetchTimelineEvents = async () => {
-    console.log('AppContext: Fetching timeline events...');
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
-        .from('timeline_events')
-        .select('*')
-        .order('year', { ascending: true });
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-      
-      if (error) throw error;
-      console.log('AppContext: Timeline events data:', data);
-      setTimelineEvents(data?.map(event => ({
-        year: event.year,
-        title: event.title,
-        description: event.description || '',
-        icon: event.icon || 'Award',
-        color: event.color || 'bg-marathi-orange'
-      })) || []);
-      console.log('AppContext: Timeline events set successfully');
-    } catch (error) {
-      console.error("Error fetching timeline events:", error);
-      setTimelineEvents([]);
-    }
-  };
-
-  const fetchNewsItems = async () => {
-    console.log('AppContext: Fetching news items...');
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
-        .from('news')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-      
-      if (error) throw error;
-      console.log('AppContext: News items data:', data);
-      setNewsItems(data?.map(news => ({
-        id: news.id,
-        title: news.title,
-        summary: news.summary || '',
-        content: news.content,
-        author: news.author || '',
-        date: news.date || news.created_at
-      })) || []);
-      console.log('AppContext: News items set successfully');
-    } catch (error) {
-      console.error("Error fetching news items:", error);
-      setNewsItems([]);
-    }
-  };
-
-  const fetchYouTubeVideos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('youtube_videos')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      setYouTubeVideos(data?.map(video => ({
-        id: video.id,
-        title: video.title,
-        videoId: video.video_id,
-        description: video.description || ''
-      })) || []);
-    } catch (error) {
-      console.error("Error fetching YouTube videos:", error);
-      setYouTubeVideos([]);
-    }
-  };
-
+  // --- PROGRAMS FETCH FROM SUPABASE ---
   const fetchPrograms = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id, name, description, details, image_url');
-      
-      if (error) throw error;
-      setPrograms(data?.map(p => ({
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, description, details, image_url');
+    if (error) {
+      console.error("Error fetching projects from Supabase:", error.message);
+      return;
+    }
+    // Convert to Program[] and add 'image' alias if needed
+    setPrograms(
+      data.map((p) => ({
         id: p.id,
         name: p.name,
         description: p.description,
         details: p.details,
         image: p.image_url || undefined,
-      })) || []);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      setPrograms([]);
-    }
-  };
-
-  const fetchPopupData = async () => {
-    console.log('AppContext: Fetching popup data...');
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
-        .from('popup_events')
-        .select('*')
-        .eq('enabled', true)
-        .maybeSingle();
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-      
-      if (error) throw error;
-      console.log('AppContext: Popup data:', data);
-      if (data) {
-        setPopupData({
-          enabled: data.enabled,
-          title: data.title,
-          description: data.description || '',
-          date: data.date || '',
-          location: data.location || '',
-          bannerImage: data.banner_image_url || undefined
-        });
-      }
-      console.log('AppContext: Popup data set successfully');
-    } catch (error) {
-      console.error("Error fetching popup data:", error);
-    }
-  };
-
-  const refreshData = async () => {
-    console.log('AppContext: Starting data refresh...');
-    setLoading(true);
-    try {
-      console.log('AppContext: Fetching all data...');
-      const results = await Promise.allSettled([
-        fetchTimelineEvents(),
-        fetchNewsItems(),
-        fetchYouTubeVideos(),
-        fetchPrograms(),
-        fetchPopupData()
-      ]);
-      console.log('AppContext: Data fetch results:', results);
-    } finally {
-      setLoading(false);
-      console.log('AppContext: Data loading complete');
-    }
+      }))
+    );
   };
 
   useEffect(() => {
-    refreshData();
+    fetchPrograms();
   }, []);
 
   // When a new program is added, insert to Supabase and refresh
@@ -389,8 +253,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         markFeedbackAsRead,
         organizationInfo,
         updateOrganizationInfo,
-        loading,
-        refreshData,
       }}
     >
       {children}
