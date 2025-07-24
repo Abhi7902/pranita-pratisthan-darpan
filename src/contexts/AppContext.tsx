@@ -144,6 +144,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // --- DATA FETCHING FUNCTIONS ---
   const fetchTimelineEvents = async () => {
+    console.log('AppContext: Fetching timeline events...');
     try {
       const { data, error } = await supabase
         .from('timeline_events')
@@ -151,6 +152,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         .order('year', { ascending: true });
       
       if (error) throw error;
+      console.log('AppContext: Timeline events data:', data);
       setTimelineEvents(data?.map(event => ({
         year: event.year,
         title: event.title,
@@ -251,17 +253,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const refreshData = async () => {
+    console.log('AppContext: Starting data refresh...');
     setLoading(true);
     try {
-      await Promise.allSettled([
+      console.log('AppContext: Fetching all data...');
+      const results = await Promise.allSettled([
         fetchTimelineEvents(),
         fetchNewsItems(),
         fetchYouTubeVideos(),
         fetchPrograms(),
         fetchPopupData()
       ]);
+      console.log('AppContext: Data fetch results:', results);
     } finally {
       setLoading(false);
+      console.log('AppContext: Data loading complete');
     }
   };
 
