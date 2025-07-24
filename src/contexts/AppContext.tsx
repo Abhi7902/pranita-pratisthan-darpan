@@ -146,16 +146,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchTimelineEvents = async () => {
     console.log('AppContext: Fetching timeline events...');
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('timeline_events')
         .select('*')
         .order('year', { ascending: true });
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       if (error) throw error;
       console.log('AppContext: Timeline events data:', data);
@@ -166,7 +160,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         icon: event.icon || 'Award',
         color: event.color || 'bg-marathi-orange'
       })) || []);
-      console.log('AppContext: Timeline events set successfully');
     } catch (error) {
       console.error("Error fetching timeline events:", error);
       setTimelineEvents([]);
@@ -174,21 +167,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const fetchNewsItems = async () => {
-    console.log('AppContext: Fetching news items...');
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('news')
         .select('*')
         .order('created_at', { ascending: false });
       
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-      
       if (error) throw error;
-      console.log('AppContext: News items data:', data);
       setNewsItems(data?.map(news => ({
         id: news.id,
         title: news.title,
@@ -197,7 +182,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         author: news.author || '',
         date: news.date || news.created_at
       })) || []);
-      console.log('AppContext: News items set successfully');
     } catch (error) {
       console.error("Error fetching news items:", error);
       setNewsItems([]);
@@ -245,22 +229,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const fetchPopupData = async () => {
-    console.log('AppContext: Fetching popup data...');
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('popup_events')
         .select('*')
         .eq('enabled', true)
         .maybeSingle();
       
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-      
       if (error) throw error;
-      console.log('AppContext: Popup data:', data);
       if (data) {
         setPopupData({
           enabled: data.enabled,
@@ -271,7 +247,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           bannerImage: data.banner_image_url || undefined
         });
       }
-      console.log('AppContext: Popup data set successfully');
     } catch (error) {
       console.error("Error fetching popup data:", error);
     }
