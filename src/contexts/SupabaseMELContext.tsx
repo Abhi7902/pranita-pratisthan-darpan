@@ -6,40 +6,60 @@ import { useAuth } from './AuthContext';
 interface Equipment {
   id: string;
   name: string;
-  photo_url: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
   total_quantity: number;
   available_quantity: number;
-  rental_duration: number;
+  rental_duration_days: number;
   deposit_amount: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface MELUser {
   id: string;
-  user_id: string;
-  username: string;
-  full_name: string;
-  email: string;
   created_at: string;
+  full_name: string;
+  username: string;
+  password_hash: string;
+  role: string;
 }
 
 interface Rental {
   id: string;
-  equipment_id: string;
-  equipment_name: string;
+  equipment_id: string | null;
+  mel_user_id: string | null;
   patient_name: string;
-  mobile_number: string;
+  patient_address: string | null;
+  patient_mobile: string | null;
+  patient_aadhar: string | null;
+  equipment_name: string;
+  deposit_amount: number;
   pickup_date: string;
-  return_date: string;
+  expected_return_date: string;
+  actual_return_date: string | null;
   status: string;
-  created_by_user_id: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface PresidentSecretary {
   id: string;
+  position: string;
   name: string;
-  role: string; // 'president' or 'secretary'
-  message: string | null;
   photo_url: string | null;
+  bio: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  tenure_start: string | null;
+  tenure_end: string | null;
+  is_current: boolean;
+  role: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface PopupEvent {
@@ -75,7 +95,14 @@ interface SupabaseMELContextType {
   setCurrentMELUser: (user: MELUser | null) => void;
   refreshData: () => Promise<void>;
   updatePresidentSecretary: (
-    updates: Omit<PresidentSecretary, 'id'> & { id?: string; photo_file?: File | null }
+    updates: { 
+      id?: string; 
+      name: string; 
+      role: string; 
+      bio?: string | null; 
+      photo_url?: string | null; 
+      photo_file?: File | null 
+    }
   ) => Promise<void>;
   fetchPresidentAndSecretary: () => Promise<void>;
 }
@@ -104,7 +131,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const fetchEquipment = async () => {
     try {
       const { data, error } = await supabase
-        .from('equipment_inventory')
+        .from('equipment')
         .select('*')
         .order('name');
       
@@ -312,9 +339,14 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
     return { photo_url: publicUrl, photo_path: photoPath };
   };
 
-  const updatePresidentSecretary = async (
-    updates: Omit<PresidentSecretary, 'id'> & { id?: string; photo_file?: File | null }
-  ) => {
+  const updatePresidentSecretary = async (updates: { 
+    id?: string; 
+    name: string; 
+    role: string; 
+    bio?: string | null; 
+    photo_url?: string | null; 
+    photo_file?: File | null 
+  }) => {
     try {
       if (!['president', 'secretary'].includes(updates.role)) throw new Error('Invalid role');
 
@@ -331,10 +363,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
       let newPhotoPath = null;
       if (updates.photo_file) {
         // Get old photo path if any
-        const oldPhotoPath =
-          existingArr && existingArr.length > 0 && existingArr[0].photo_path
-            ? existingArr[0].photo_path
-            : undefined;
+        const oldPhotoPath = undefined; // Photo path not tracked in current schema
 
         // Upload and get new url/path, deleting old photo if exists
         const uploaded = await uploadPresidentSecretaryPhoto(
@@ -345,14 +374,15 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
         newPhotoUrl = uploaded.photo_url;
         newPhotoPath = uploaded.photo_path;
       } else if (existingArr && existingArr.length > 0) {
-        newPhotoPath = existingArr[0].photo_path ?? null;
+        // Photo path not used in current schema
       }
 
       const payload: any = {
+        position: updates.role, // Map role to position
         name: updates.name,
-        message: updates.message,
+        bio: updates.bio,
         photo_url: newPhotoUrl,
-        photo_path: newPhotoPath,
+        role: updates.role,
         updated_at: new Date().toISOString(),
       };
 
@@ -390,7 +420,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Unauthorized');
     }
     try {
-      const { error } = await supabase.from('equipment_inventory').insert([equipmentData]);
+      const { error } = await supabase.from('equipment').insert([equipmentData]);
       if (error) throw error;
       toast.success('Equipment added successfully!');
       await fetchEquipment();
@@ -407,7 +437,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Unauthorized');
     }
     try {
-      const { error } = await supabase.from('equipment_inventory').update(updates).eq('id', id);
+      const { error } = await supabase.from('equipment').update(updates).eq('id', id);
       if (error) throw error;
       toast.success('Equipment updated successfully!');
       await fetchEquipment();
@@ -421,7 +451,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const deleteEquipment = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('equipment_inventory')
+        .from('equipment')
         .delete()
         .eq('id', id);
       
@@ -492,7 +522,7 @@ export const SupabaseMELProvider = ({ children }: { children: ReactNode }) => {
   const getOverdueRentals = () => {
     const today = new Date();
     return rentals.filter(rental => 
-      rental.status === 'rented' && new Date(rental.return_date) < today
+      rental.status === 'active' && new Date(rental.expected_return_date) < today
     );
   };
 

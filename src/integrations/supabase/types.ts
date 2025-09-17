@@ -294,6 +294,7 @@ export type Database = {
           id: string
           location: string | null
           title: string
+          updated_at: string | null
         }
         Insert: {
           banner_image_url?: string | null
@@ -304,6 +305,7 @@ export type Database = {
           id?: string
           location?: string | null
           title: string
+          updated_at?: string | null
         }
         Update: {
           banner_image_url?: string | null
@@ -314,6 +316,7 @@ export type Database = {
           id?: string
           location?: string | null
           title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -328,6 +331,7 @@ export type Database = {
           name: string
           photo_url: string | null
           position: string
+          role: string | null
           tenure_end: string | null
           tenure_start: string | null
           updated_at: string
@@ -342,6 +346,7 @@ export type Database = {
           name: string
           photo_url?: string | null
           position: string
+          role?: string | null
           tenure_end?: string | null
           tenure_start?: string | null
           updated_at?: string
@@ -356,6 +361,7 @@ export type Database = {
           name?: string
           photo_url?: string | null
           position?: string
+          role?: string | null
           tenure_end?: string | null
           tenure_start?: string | null
           updated_at?: string
@@ -424,6 +430,8 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_news: boolean | null
+          thumbnail_url: string | null
           title: string
           video_id: string
         }
@@ -431,6 +439,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_news?: boolean | null
+          thumbnail_url?: string | null
           title: string
           video_id: string
         }
@@ -438,6 +448,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_news?: boolean | null
+          thumbnail_url?: string | null
           title?: string
           video_id?: string
         }
